@@ -76,7 +76,6 @@ export default function AdminDashboard() {
   const [scans, setScans] = useState<Scan[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [orderRequests, setOrderRequests] = useState<OrderRequest[]>([]);
-  const [selectedBillOrder, setSelectedBillOrder] = useState<OrderRequest | null>(null);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [isBulkPrintModalOpen, setIsBulkPrintModalOpen] = useState(false);
 
@@ -886,7 +885,10 @@ export default function AdminDashboard() {
                       {order.status === "approved" && (
                         <div className="flex gap-3">
                           <button
-                            onClick={() => setSelectedBillOrder(order)}
+                            onClick={() => {
+                              setSelectedOrderIds([order.id]);
+                              setIsBulkPrintModalOpen(true);
+                            }}
                             className="flex-1 bg-[#2c1810] text-[#d4af37] border border-[#d4af37]/40 hover:bg-[#4a2c1d] py-2.5 rounded-xl font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 group"
                           >
                             <Receipt size={16} className="group-hover:scale-110 transition-transform text-[#d4af37]" />
@@ -904,7 +906,10 @@ export default function AdminDashboard() {
 
                       {order.status === "completed" && (
                         <button
-                          onClick={() => setSelectedBillOrder(order)}
+                          onClick={() => {
+                            setSelectedOrderIds([order.id]);
+                            setIsBulkPrintModalOpen(true);
+                          }}
                           className="w-full bg-[#2c1810] text-[#d4af37] border border-[#d4af37]/40 hover:bg-[#4a2c1d] py-2.5 rounded-xl font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 group"
                         >
                           <Receipt size={16} className="group-hover:scale-110 transition-transform text-[#d4af37]" />
@@ -1372,174 +1377,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {selectedBillOrder && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 print:p-0 print:static print:bg-white">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedBillOrder(null)}
-              className="absolute inset-0 bg-black/70 backdrop-blur-sm print:hidden"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-[#e5d5c5] my-6 max-h-[90vh] flex flex-col print-bill-modal"
-            >
-              {/* Top Action Bar (Hidden when printing) */}
-              <div className="p-4 bg-[#2c1810] text-white flex justify-between items-center print-hide shrink-0">
-                <div className="flex items-center gap-2">
-                  <Receipt className="text-[#d4af37]" size={20} />
-                  <span className="font-serif font-bold text-sm text-[#d4af37]">GST Restaurant Tax Invoice</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => window.print()}
-                    className="flex items-center gap-1.5 bg-[#d4af37] text-[#140c0a] px-3.5 py-1.5 rounded-lg text-xs font-bold hover:bg-[#e6c250] transition-all shadow"
-                  >
-                    <Printer size={14} />
-                    Print Bill
-                  </button>
-                  <button
-                    onClick={() => setSelectedBillOrder(null)}
-                    className="p-1.5 text-[#8b7355] hover:text-white rounded-lg hover:bg-white/10"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Indian Thermal Receipt Format */}
-              <div className="p-6 overflow-y-auto font-mono text-[11px] text-slate-900 bg-white space-y-3 print:p-0 print:overflow-visible">
-                {/* Header */}
-                <div className="text-center space-y-0.5 border-b-2 border-dashed border-slate-400 pb-3">
-                  <h2 className="text-base font-black uppercase tracking-wider text-black">foQR RESTAURANT</h2>
-                  <p className="text-[10px] font-semibold text-slate-700">FINE DINING & MULTI CUISINE</p>
-                  <p className="text-[9px] text-slate-600">Plot 42, Food Court, Cyber Hub, Sector 29, Gurugram</p>
-                  <p className="text-[9px] text-slate-600">Ph: +91 98765 43210 | Email: billing@foqr.com</p>
-                  <div className="pt-1 text-[9px] font-bold text-slate-800 space-y-0.5 border-t border-slate-200 mt-1.5">
-                    <p>GSTIN: <span className="font-extrabold text-black">07AAAAA0000A1Z5</span></p>
-                    <p>FSSAI Lic No: <span className="font-extrabold text-black">10021011000432</span></p>
-                    <p>SAC Code: <span className="font-extrabold text-black">996331</span> (Restaurant Services)</p>
-                  </div>
-                </div>
-
-                {/* Tax Invoice Banner */}
-                <div className="text-center bg-slate-100 py-0.5 font-extrabold border border-slate-300 uppercase tracking-widest text-[10px]">
-                  TAX INVOICE / CASH MEMO
-                </div>
-
-                {/* Meta details */}
-                <div className="grid grid-cols-2 gap-x-2 text-[10px] border-b-2 border-dashed border-slate-400 pb-2 leading-tight">
-                  <div>
-                    <p><span className="text-slate-500">Bill No:</span> <strong className="text-black font-bold">INV-{selectedBillOrder.id.slice(-6).toUpperCase()}</strong></p>
-                    <p><span className="text-slate-500">Table:</span> <strong className="text-black font-bold">Table {selectedBillOrder.tableNumber}</strong></p>
-                    <p><span className="text-slate-500">Mode:</span> <strong>Dine-In</strong></p>
-                  </div>
-                  <div className="text-right">
-                    <p><span className="text-slate-500">Date:</span> <strong>{selectedBillOrder.createdAt?.toDate ? selectedBillOrder.createdAt.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : new Date().toLocaleDateString('en-IN')}</strong></p>
-                    <p><span className="text-slate-500">Time:</span> <strong>{selectedBillOrder.createdAt?.toDate ? selectedBillOrder.createdAt.toDate().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('en-IN')}</strong></p>
-                    <p><span className="text-slate-500">Guest:</span> <strong>{selectedBillOrder.customerName || 'Guest'}</strong> ({selectedBillOrder.customerPhone || 'N/A'})</p>
-                  </div>
-                </div>
-
-                {/* Items Table */}
-                <div>
-                  <table className="w-full text-[10px] text-left border-collapse">
-                    <thead>
-                      <tr className="border-b-2 border-slate-800 font-extrabold uppercase text-[9px]">
-                        <th className="py-0.5 w-4 text-slate-600">#</th>
-                        <th className="py-0.5 text-slate-900">ITEM</th>
-                        <th className="py-0.5 text-center w-8 text-slate-900">QTY</th>
-                        <th className="py-0.5 text-right w-12 text-slate-900">RATE</th>
-                        <th className="py-0.5 text-right w-14 text-slate-900">AMT (₹)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-dashed divide-slate-300">
-                      {selectedBillOrder.items?.map((item, idx) => {
-                        const price = item.price || (item.subtotal ? item.subtotal / item.quantity : 0);
-                        const amt = item.subtotal || (price * item.quantity);
-                        return (
-                          <tr key={idx} className="py-0.5">
-                            <td className="py-0.5 text-slate-500 font-mono">{idx + 1}</td>
-                            <td className="py-0.5 font-bold text-slate-900 pr-1">{item.name}</td>
-                            <td className="py-0.5 text-center font-bold">{item.quantity}</td>
-                            <td className="py-0.5 text-right text-slate-700">{price.toFixed(2)}</td>
-                            <td className="py-0.5 text-right font-bold text-black">{amt.toFixed(2)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Calculation */}
-                {(() => {
-                  const itemsSubtotal = selectedBillOrder.items?.reduce((sum, item) => sum + (item.subtotal || (item.price * item.quantity)), 0) || selectedBillOrder.totalAmount || 0;
-                  const cgst = itemsSubtotal * 0.025;
-                  const sgst = itemsSubtotal * 0.025;
-                  const grossTotal = itemsSubtotal + cgst + sgst;
-                  const grandTotalRounded = Math.round(grossTotal);
-                  const roundOff = grandTotalRounded - grossTotal;
-
-                  return (
-                    <div className="border-t-2 border-b-2 border-dashed border-slate-400 py-2 space-y-1 text-[10px]">
-                      <div className="flex justify-between text-slate-700">
-                        <span>Sub Total (Taxable Amount):</span>
-                        <span className="font-bold text-black">₹{itemsSubtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-600">
-                        <span>CGST @ 2.5%:</span>
-                        <span>₹{cgst.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-600">
-                        <span>SGST @ 2.5%:</span>
-                        <span>₹{sgst.toFixed(2)}</span>
-                      </div>
-                      {Math.abs(roundOff) > 0.001 && (
-                        <div className="flex justify-between text-slate-500 text-[9px]">
-                          <span>Round Off:</span>
-                          <span>{roundOff > 0 ? `+₹${roundOff.toFixed(2)}` : `-₹${Math.abs(roundOff).toFixed(2)}`}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center text-xs font-black text-black pt-1 border-t-2 border-slate-800">
-                        <span className="uppercase">NET AMOUNT PAYABLE:</span>
-                        <span className="text-sm">₹{grandTotalRounded.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* GST Tax Summary Breakdown Box */}
-                <div className="bg-slate-50 p-2 rounded-lg border border-slate-300 text-[9px] space-y-1">
-                  <p className="font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 pb-0.5">GST Tax Breakdown (GST 5%):</p>
-                  {(() => {
-                    const itemsSubtotal = selectedBillOrder.items?.reduce((sum, item) => sum + (item.subtotal || (item.price * item.quantity)), 0) || selectedBillOrder.totalAmount || 0;
-                    const cgst = itemsSubtotal * 0.025;
-                    const sgst = itemsSubtotal * 0.025;
-                    return (
-                      <div className="grid grid-cols-3 gap-1 pt-0.5 text-slate-700 font-mono">
-                        <div>CGST (2.5%): ₹{cgst.toFixed(2)}</div>
-                        <div>SGST (2.5%): ₹{sgst.toFixed(2)}</div>
-                        <div className="font-bold text-black">Total Tax: ₹{(cgst + sgst).toFixed(2)}</div>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Footer Message */}
-                <div className="text-center pt-1.5 space-y-0.5 text-[9px] border-t-2 border-dashed border-slate-400">
-                  <p className="font-extrabold tracking-widest text-black uppercase">*** THANK YOU FOR DINING WITH US ***</p>
-                  <p className="text-slate-600 font-semibold">PLEASE VISIT AGAIN!</p>
-                  <p className="text-slate-500 text-[8px] pt-0.5">This is a computer generated tax invoice. No signature required.</p>
-                  <p className="text-slate-400 text-[8px] tracking-wider uppercase">Powered by foQR Digital Dining</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
         {isBulkPrintModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 print:p-0 print:static print:bg-white">
             <motion.div
@@ -1560,7 +1397,9 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   <Receipt className="text-[#d4af37]" size={20} />
                   <span className="font-serif font-bold text-sm text-[#d4af37]">
-                    Bulk GST Bills ({selectedOrderIds.length} Selected) - 4 per A4 Sheet Layout
+                    {selectedOrderIds.length === 1 
+                      ? `GST Restaurant Tax Invoice (Order #${orderRequests.find(o => o.id === selectedOrderIds[0])?.id.slice(-6).toUpperCase() || ''})`
+                      : `Bulk GST Bills (${selectedOrderIds.length} Selected) - 4 per A4 Sheet Layout`}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1569,7 +1408,7 @@ export default function AdminDashboard() {
                     className="flex items-center gap-1.5 bg-[#d4af37] text-[#140c0a] px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#e6c250] transition-all shadow"
                   >
                     <Printer size={16} />
-                    Print All Bills
+                    {selectedOrderIds.length === 1 ? "Print Bill" : "Print All Bills"}
                   </button>
                   <button
                     onClick={() => setIsBulkPrintModalOpen(false)}
@@ -1613,7 +1452,7 @@ export default function AdminDashboard() {
                           <div className="grid grid-cols-2 text-[8px] border-b border-dashed border-slate-400 pb-1">
                             <div>
                               <p>Bill: <strong className="text-black font-bold">INV-{order.id.slice(-6).toUpperCase()}</strong></p>
-                              <p>Table: <strong className="text-black font-bold">Table {order.tableNumber}</strong> (Dine-In)</p>
+                              <p>Table: <strong className="text-black font-bold">{order.tableNumber?.toString().toLowerCase().startsWith("table") ? order.tableNumber : `Table ${order.tableNumber}`}</strong> (Dine-In)</p>
                             </div>
                             <div className="text-right">
                               <p>Date: {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN')} {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('en-IN')}</p>
