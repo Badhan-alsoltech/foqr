@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: categories
+    // Fields:
+    //   - name: string (required)
+    //   - order: int (required)
+    //
+    // Collection: menuItems
+    // Fields:
+    //   - name: string (required)
+    //   - description: string
+    //   - price: number (required)
+    //   - categoryId: string (required)
+    //   - imageUrl: string
+    //   - isAvailable: bool
+    //   - isSpicy: bool
+    //   - isVegetarian: bool
+    //   - createdAt: timestamp
+    //
+    // Collection: qrCodes
+    // Fields:
+    //   - name: string (required)
+    //   - tableNumber: string
+    //   - createdAt: timestamp
+    //
+    // Collection: scans
+    // Fields:
+    //   - qrId: string (required)
+    //   - timestamp: timestamp (required)
+    //   - userAgent: string
+    //
+    // Collection: users
+    // Fields:
+    //   - email: string (required)
+    //   - role: string (required, 'admin' or 'staff')
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "surajskfgi@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isStaff() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'staff']);
+    }
+
+    function isValidCategory(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.order is int;
+    }
+
+    function isValidMenuItem(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.price is number && data.price >= 0 &&
+             data.categoryId is string &&
+             (data.description == null || (data.description is string && data.description.size() < 1000)) &&
+             (data.imageUrl == null || (data.imageUrl is string && data.imageUrl.size() < 2000));
+    }
+
+    function isValidScan(data) {
+      return data.qrId is string && data.timestamp is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /categories/{categoryId} {
+      allow read, write: if true;
+    }
+
+    match /menuItems/{itemId} {
+      allow read, write: if true;
+    }
+
+    match /tables/{tableId} {
+      allow read, write: if true;
+    }
+
+    match /settings/{settingId} {
+      allow read, write: if true;
+    }
+
+    match /qrCodes/{qrId} {
+      allow read, write: if true;
+    }
+
+    match /scans/{scanId} {
+      allow read, write: if true;
+    }
+
+    match /orderRequests/{orderId} {
+      allow read, write: if true;
+    }
+
+    match /orders/{orderId} {
+      allow read, write: if true;
+    }
+
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /test/connection {
+      allow read, write: if true;
+    }
+  }
+}

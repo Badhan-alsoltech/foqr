@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "Category": {
+      "title": "Category",
+      "description": "Menu categories like Appetizers, Mains, etc.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the category" },
+        "order": { "type": "integer", "description": "Display order" }
+      },
+      "required": ["name", "order"]
+    },
+    "MenuItem": {
+      "title": "MenuItem",
+      "description": "A dish on the menu",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "categoryId": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "isAvailable": { "type": "boolean" },
+        "isSpicy": { "type": "boolean" },
+        "isVegetarian": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "categoryId"]
+    },
+    "QRCode": {
+      "title": "QRCode",
+      "description": "A generated QR code for a specific table or campaign",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "tableNumber": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "Scan": {
+      "title": "Scan",
+      "description": "A record of a QR code scan",
+      "type": "object",
+      "properties": {
+        "qrId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "userAgent": { "type": "string" }
+      },
+      "required": ["qrId", "timestamp"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Admin users",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "staff"] }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "categories": { "schema": "Category", "description": "Menu categories" },
+    "menuItems": { "schema": "MenuItem", "description": "Menu items" },
+    "qrCodes": { "schema": "QRCode", "description": "QR codes" },
+    "scans": { "schema": "Scan", "description": "Scan logs" },
+    "users": { "schema": "User", "description": "Admin users" }
+  }
+}

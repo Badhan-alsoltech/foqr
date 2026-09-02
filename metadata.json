@@ -1,0 +1,5 @@
+{
+  "name": "foQR",
+  "description": "A modern QR-based menu management system with real-time tracking and admin dashboard.",
+  "requestFramePermissions": []
+}
