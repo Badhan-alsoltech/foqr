@@ -8,7 +8,8 @@ import {
   LayoutDashboard, Utensils, QrCode, BarChart3, Settings, LogOut, 
   Plus, Edit2, Trash2, Save, X, ChevronRight, Image as ImageIcon,
   Flame, Leaf, Check, AlertCircle, TrendingUp, Users, MousePointer2,
-    ShoppingBag, CheckCircle2, XCircle, Clock, Phone, History, Receipt, Printer
+  ShoppingBag, CheckCircle2, XCircle, Clock, Phone, History, Receipt, Printer, Menu as MenuIcon,
+  ChevronDown, ChevronUp
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { cn } from "../lib/utils";
@@ -78,6 +79,18 @@ export default function AdminDashboard() {
   const [orderRequests, setOrderRequests] = useState<OrderRequest[]>([]);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [isBulkPrintModalOpen, setIsBulkPrintModalOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [selectedCompletedTableNum, setSelectedCompletedTableNum] = useState<string | null>(null);
+  const [expandedMobileTableNum, setExpandedMobileTableNum] = useState<string | null>(null);
+
+  const completedOrdersList = orderRequests.filter(o => o.status === "completed");
+  const completedTableNumbers: string[] = Array.from(
+    new Set(completedOrdersList.map(o => o.tableNumber?.toString().trim()))
+  ).filter((t): t is string => Boolean(t)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+  const activeCompletedTable = (selectedCompletedTableNum && completedTableNumbers.includes(selectedCompletedTableNum))
+    ? selectedCompletedTableNum
+    : (completedTableNumbers[0] || null);
 
   const approvedOrdersList = orderRequests.filter(o => o.status === "approved");
 
@@ -381,15 +394,60 @@ export default function AdminDashboard() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#fdfaf6]">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#fdfaf6] flex">
+    <div className="min-h-screen bg-[#fdfaf6] flex flex-col md:flex-row relative">
+      {/* Mobile Top Header Bar */}
+      <div className="md:hidden bg-[#2c1810] text-[#fdfaf6] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-md">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="p-2 rounded-xl bg-[#4a2c1d] text-[#d4af37] hover:bg-[#5c3826] transition-colors"
+            aria-label="Toggle Navigation Menu"
+          >
+            {isMobileSidebarOpen ? <X size={20} /> : <MenuIcon size={20} />}
+          </button>
+          <div>
+            <h1 className="text-xl font-serif font-bold text-[#d4af37] leading-none">foQR</h1>
+            <p className="text-[9px] uppercase tracking-widest text-[#8b7355]">Admin Panel</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => navigate("/")}
+            className="px-3 py-1.5 bg-[#d4af37] text-[#2c1810] rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
+          >
+            <MousePointer2 size={14} />
+            Menu
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Drawer Overlay Backdrop */}
+      {isMobileSidebarOpen && (
+        <div 
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-xs transition-opacity"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#2c1810] text-[#fdfaf6] p-6 flex flex-col">
-        <div className="mb-12">
-          <h1 className="text-2xl font-serif font-bold text-[#d4af37]">foQR</h1>
-          <p className="text-[10px] uppercase tracking-widest text-[#8b7355]">Admin Dashboard</p>
+      <aside className={cn(
+        "w-64 bg-[#2c1810] text-[#fdfaf6] p-6 flex flex-col fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out md:translate-x-0 shrink-0",
+        isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="mb-10 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-serif font-bold text-[#d4af37]">foQR</h1>
+            <p className="text-[10px] uppercase tracking-widest text-[#8b7355]">Admin Dashboard</p>
+          </div>
+          <button 
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="md:hidden text-[#8b7355] hover:text-[#fdfaf6]"
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 space-y-2 overflow-y-auto">
           {[
             { id: "overview", icon: LayoutDashboard, label: "Overview" },
             { id: "menu", icon: Utensils, label: "Menu Management" },
@@ -405,7 +463,10 @@ export default function AdminDashboard() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => {
+                setActiveTab(tab.id as any);
+                setIsMobileSidebarOpen(false);
+              }}
               className={cn(
                 "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-sm font-medium",
                 activeTab === tab.id 
@@ -449,13 +510,13 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <header className="flex justify-between items-center mb-10">
+      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto w-full min-w-0">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-10">
           <div>
-            <h2 className="text-3xl font-serif font-bold text-[#2c1810] capitalize">{activeTab}</h2>
-            <p className="text-[#5c4033]">Welcome back, {user?.displayName?.split(' ')[0] || 'Admin'}</p>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#2c1810] capitalize">{activeTab}</h2>
+            <p className="text-xs sm:text-sm text-[#5c4033]">Welcome back, {user?.displayName?.split(' ')[0] || 'Admin'}</p>
           </div>
-          <div className="flex gap-4">
+          <div className="hidden sm:flex gap-4">
             <button 
               onClick={() => navigate("/")}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e5d5c5] rounded-xl text-[#2c1810] hover:shadow-md transition-all text-sm font-medium"
@@ -463,30 +524,33 @@ export default function AdminDashboard() {
               <MousePointer2 size={18} />
               View Menu
             </button>
-            <button className="p-2 bg-white border border-[#e5d5c5] rounded-xl text-[#5c4033] hover:shadow-md transition-all">
+            <button 
+              onClick={() => setActiveTab("settings")}
+              className="p-2 bg-white border border-[#e5d5c5] rounded-xl text-[#5c4033] hover:shadow-md transition-all"
+            >
               <Settings size={20} />
             </button>
           </div>
         </header>
 
         {activeTab === "overview" && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {[
                 { label: "Total Items", value: menuItems.length, icon: Utensils, color: "bg-blue-500" },
                 { label: "Categories", value: categories.length, icon: LayoutDashboard, color: "bg-purple-500" },
                 { label: "Total Scans", value: scans.length, icon: MousePointer2, color: "bg-orange-500" },
                 { label: "Active QR Codes", value: 4, icon: QrCode, color: "bg-green-500" },
               ].map((stat, i) => (
-                <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5d5c5]">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={cn("p-3 rounded-xl text-white", stat.color)}>
-                      <stat.icon size={24} />
+                <div key={i} className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-[#e5d5c5]">
+                  <div className="flex justify-between items-start mb-3 sm:mb-4">
+                    <div className={cn("p-2 sm:p-3 rounded-xl text-white", stat.color)}>
+                      <stat.icon size={20} className="sm:w-6 sm:h-6" />
                     </div>
-                    <TrendingUp size={20} className="text-green-500" />
+                    <TrendingUp size={18} className="text-green-500 shrink-0" />
                   </div>
-                  <p className="text-[#8b7355] text-sm font-medium">{stat.label}</p>
-                  <h3 className="text-2xl font-bold text-[#2c1810]">{stat.value}</h3>
+                  <p className="text-[#8b7355] text-xs sm:text-sm font-medium truncate">{stat.label}</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#2c1810]">{stat.value}</h3>
                 </div>
               ))}
             </div>
@@ -540,13 +604,13 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === "menu" && (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center">
-              <div className="flex bg-white border border-[#e5d5c5] p-1 rounded-xl">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+              <div className="flex bg-white border border-[#e5d5c5] p-1 rounded-xl w-full sm:w-auto">
                 <button 
                   onClick={() => setMenuSubTab("items")}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                    "flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-center",
                     menuSubTab === "items" ? "bg-[#2c1810] text-[#fdfaf6] shadow-md" : "text-[#8b7355] hover:text-[#2c1810]"
                   )}
                 >
@@ -555,18 +619,18 @@ export default function AdminDashboard() {
                 <button 
                   onClick={() => setMenuSubTab("categories")}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                    "flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-center",
                     menuSubTab === "categories" ? "bg-[#2c1810] text-[#fdfaf6] shadow-md" : "text-[#8b7355] hover:text-[#2c1810]"
                   )}
                 >
                   Categories
                 </button>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 {menuSubTab === "items" ? (
                   <button 
                     onClick={() => setIsAddingItem(true)}
-                    className="flex items-center gap-2 bg-[#2c1810] text-[#fdfaf6] px-4 py-2 rounded-xl hover:bg-[#4a2c1d] transition-all text-sm font-medium shadow-lg"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#2c1810] text-[#fdfaf6] px-4 py-2.5 rounded-xl hover:bg-[#4a2c1d] transition-all text-xs sm:text-sm font-medium shadow-lg"
                   >
                     <Plus size={18} />
                     Add Menu Item
@@ -574,7 +638,7 @@ export default function AdminDashboard() {
                 ) : (
                   <button 
                     onClick={() => setIsAddingCategory(true)}
-                    className="flex items-center gap-2 bg-[#2c1810] text-[#fdfaf6] px-4 py-2 rounded-xl hover:bg-[#4a2c1d] transition-all text-sm font-medium shadow-lg"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#2c1810] text-[#fdfaf6] px-4 py-2.5 rounded-xl hover:bg-[#4a2c1d] transition-all text-xs sm:text-sm font-medium shadow-lg"
                   >
                     <Plus size={18} />
                     Add Category
@@ -584,8 +648,8 @@ export default function AdminDashboard() {
             </div>
 
             {menuSubTab === "items" ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-[#e5d5c5] overflow-hidden">
-                <table className="w-full text-left border-collapse">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#e5d5c5] overflow-x-auto w-full">
+                <table className="w-full text-left border-collapse min-w-[640px]">
                   <thead className="bg-[#fdfaf6] border-b border-[#e5d5c5]">
                     <tr>
                       <th className="px-6 py-4 text-xs uppercase tracking-widest text-[#8b7355] font-bold">Item</th>
@@ -652,8 +716,8 @@ export default function AdminDashboard() {
                 </table>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-sm border border-[#e5d5c5] overflow-hidden">
-                <table className="w-full text-left border-collapse">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#e5d5c5] overflow-x-auto w-full">
+                <table className="w-full text-left border-collapse min-w-[500px]">
                   <thead className="bg-[#fdfaf6] border-b border-[#e5d5c5]">
                     <tr>
                       <th className="px-6 py-4 text-xs uppercase tracking-widest text-[#8b7355] font-bold">Order</th>
@@ -701,13 +765,13 @@ export default function AdminDashboard() {
           </div>
         )}
         {activeTab === "orders" && (
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-[#e5d5c5]">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-[#e5d5c5]">
               <div>
-                <h3 className="text-xl font-serif font-bold text-[#2c1810]">Customer Order Requests</h3>
-                <p className="text-sm text-[#8b7355]">Review pending table orders from customers, verify details, and approve or decline requests.</p>
+                <h3 className="text-lg sm:text-xl font-serif font-bold text-[#2c1810]">Customer Order Requests</h3>
+                <p className="text-xs sm:text-sm text-[#8b7355]">Review pending table orders from customers, verify details, and approve or decline requests.</p>
               </div>
-              <div className="flex bg-[#fdfaf6] border border-[#e5d5c5] p-1 rounded-xl">
+              <div className="flex bg-[#fdfaf6] border border-[#e5d5c5] p-1 rounded-xl overflow-x-auto no-scrollbar w-full sm:w-auto max-w-full">
                 {(["pending", "approved", "completed", "rejected"] as const).map((status) => {
                   const count = orderRequests.filter(o => o.status === status).length;
                   return (
@@ -715,7 +779,7 @@ export default function AdminDashboard() {
                       key={status}
                       onClick={() => setOrderSubTab(status)}
                       className={cn(
-                        "px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize flex items-center gap-2",
+                        "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all capitalize flex items-center gap-1.5 sm:gap-2 shrink-0",
                         orderSubTab === status 
                           ? "bg-[#2c1810] text-[#fdfaf6] shadow-md" 
                           : "text-[#8b7355] hover:text-[#2c1810]"
@@ -773,8 +837,309 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* Order Requests List */}
-            {orderRequests.filter(o => o.status === orderSubTab).length === 0 ? (
+            {/* Order Requests List / Completed View */}
+            {orderSubTab === "completed" ? (
+              completedOrdersList.length === 0 ? (
+                <div className="bg-white p-12 rounded-3xl shadow-sm border border-[#e5d5c5] text-center space-y-4">
+                  <div className="w-16 h-16 bg-[#fdfaf6] text-[#8b7355] border border-[#e5d5c5] rounded-2xl flex items-center justify-center mx-auto">
+                    <CheckCircle2 size={32} className="text-green-600" />
+                  </div>
+                  <h4 className="text-xl font-serif font-bold text-[#2c1810]">No Completed Order Requests</h4>
+                  <p className="text-sm text-[#8b7355] max-w-md mx-auto">
+                    When customer orders are marked as completed, they will appear here organized by table number.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Mobile Accordion View (< md) */}
+                  <div className="block md:hidden space-y-3">
+                    <div className="bg-white p-4 rounded-2xl border border-[#e5d5c5] flex justify-between items-center mb-3">
+                      <div>
+                        <h4 className="text-base font-serif font-bold text-[#2c1810]">Table Orders</h4>
+                        <p className="text-xs text-[#8b7355]">Tap a table to view or hide bookings</p>
+                      </div>
+                      <span className="text-xs bg-[#fdfaf6] border border-[#e5d5c5] px-2.5 py-1 rounded-full font-bold text-[#2c1810]">
+                        {completedOrdersList.length} Bills
+                      </span>
+                    </div>
+
+                    {completedTableNumbers.map((tNum) => {
+                      const tableOrders = completedOrdersList.filter(o => o.tableNumber?.toString().trim() === tNum);
+                      const tableTotalRevenue = tableOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+                      const isExpanded = expandedMobileTableNum === tNum;
+                      const displayTableName = String(tNum).toLowerCase().startsWith("table") ? String(tNum) : `Table ${tNum}`;
+
+                      return (
+                        <div key={tNum} className="space-y-2">
+                          <button
+                            onClick={() => {
+                              setSelectedCompletedTableNum(tNum);
+                              setExpandedMobileTableNum(prev => prev === tNum ? null : tNum);
+                            }}
+                            className={cn(
+                              "w-full text-left p-4 rounded-2xl border transition-all flex justify-between items-center shadow-xs",
+                              isExpanded
+                                ? "bg-[#2c1810] text-[#fdfaf6] border-[#2c1810]"
+                                : "bg-white text-[#2c1810] border-[#e5d5c5]"
+                            )}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className={cn(
+                                "font-bold text-sm",
+                                isExpanded ? "text-[#d4af37]" : "text-[#2c1810]"
+                              )}>
+                                {displayTableName}
+                              </span>
+                              <span className={cn(
+                                "text-xs font-mono px-2 py-0.5 rounded-full text-[10px]",
+                                isExpanded ? "bg-[#4a2c1d] text-[#c2b2a6]" : "bg-[#fdfaf6] text-[#8b7355] border border-[#e5d5c5]"
+                              )}>
+                                {tableOrders.length} {tableOrders.length === 1 ? "bill" : "bills"}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className={cn(
+                                "text-xs font-bold font-mono px-2.5 py-1 rounded-lg",
+                                isExpanded ? "bg-[#d4af37] text-[#140c0a]" : "bg-[#e5d5c5] text-[#2c1810]"
+                              )}>
+                                Rs {tableTotalRevenue.toFixed(0)}
+                              </span>
+                              {isExpanded ? (
+                                <ChevronUp size={18} className="text-[#d4af37] shrink-0" />
+                              ) : (
+                                <ChevronDown size={18} className="text-[#8b7355] shrink-0" />
+                              )}
+                            </div>
+                          </button>
+
+                          {/* Accordion Bookings Content directly below table button */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="space-y-3 pl-1 pr-1 pt-1 pb-2 overflow-hidden"
+                              >
+                                {tableOrders.map((order) => (
+                                  <div key={order.id} className="bg-white rounded-2xl p-4 border border-[#e5d5c5] space-y-3 shadow-xs">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex items-center gap-2">
+                                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-green-50 text-green-700 border-green-200">
+                                          completed
+                                        </span>
+                                        <span className="text-xs font-mono text-[#8b7355]">INV-{order.id.slice(-6).toUpperCase()}</span>
+                                      </div>
+                                      <span className="text-[11px] font-bold text-[#2c1810] font-mono">
+                                        {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-xs text-[#5c4033] bg-[#fdfaf6] p-2.5 rounded-xl border border-[#e5d5c5]">
+                                      <p><strong className="text-[#2c1810]">{order.customerName || 'Guest'}</strong></p>
+                                      <a href={`tel:${order.customerPhone}`} className="font-mono font-bold text-[#2c1810] hover:text-[#d4af37]">
+                                        {order.customerPhone}
+                                      </a>
+                                    </div>
+
+                                    <div className="divide-y divide-[#e5d5c5] bg-[#fdfaf6]/50 rounded-xl p-2.5 border border-[#e5d5c5] text-xs">
+                                      {order.items?.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between py-1">
+                                          <span><strong className="text-[#d4af37] mr-1">{item.quantity}x</strong>{item.name}</span>
+                                          <span className="font-bold">Rs {(item.subtotal || (item.price * item.quantity)).toFixed(2)}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    <div className="flex justify-between items-center pt-2 border-t border-[#e5d5c5]">
+                                      <span className="text-xs font-bold text-[#2c1810]">Total: Rs {order.totalAmount?.toFixed(2)}</span>
+                                      <button
+                                        onClick={() => {
+                                          setSelectedOrderIds([order.id]);
+                                          setIsBulkPrintModalOpen(true);
+                                        }}
+                                        className="bg-[#2c1810] text-[#d4af37] px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1"
+                                      >
+                                        <Receipt size={14} />
+                                        GST Bill
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop Split Dual-Column View (>= md) */}
+                  <div className="hidden md:grid md:grid-cols-12 gap-6 items-start">
+                    {/* Left Column: Table Numbers List (Independent Scroll) */}
+                    <div className="md:col-span-4 bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-[#e5d5c5] space-y-4">
+                      <div className="flex justify-between items-center pb-3 border-b border-[#e5d5c5]">
+                        <div>
+                          <h4 className="text-base font-serif font-bold text-[#2c1810]">Tables</h4>
+                          <p className="text-xs text-[#8b7355]">{completedTableNumbers.length} Tables with Completed Orders</p>
+                        </div>
+                        <span className="text-xs bg-[#fdfaf6] border border-[#e5d5c5] px-2.5 py-1 rounded-full font-bold text-[#2c1810]">
+                          {completedOrdersList.length} Total
+                        </span>
+                      </div>
+
+                      {/* Left Independent Scroll */}
+                      <div className="overflow-y-auto max-h-[60vh] md:max-h-[calc(100vh-280px)] space-y-2.5 pr-1 no-scrollbar">
+                        {completedTableNumbers.map((tNum) => {
+                          const tableOrders = completedOrdersList.filter(o => o.tableNumber?.toString().trim() === tNum);
+                          const tableTotalRevenue = tableOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+                          const isSelected = activeCompletedTable === tNum;
+                          const displayTableName = String(tNum).toLowerCase().startsWith("table") ? String(tNum) : `Table ${tNum}`;
+
+                          return (
+                            <button
+                              key={tNum}
+                              onClick={() => setSelectedCompletedTableNum(tNum)}
+                              className={cn(
+                                "w-full text-left p-3.5 sm:p-4 rounded-2xl border transition-all flex justify-between items-center group",
+                                isSelected
+                                  ? "bg-[#2c1810] text-[#fdfaf6] border-[#2c1810] shadow-md scale-[1.01]"
+                                  : "bg-[#fdfaf6] text-[#2c1810] border-[#e5d5c5] hover:border-[#d4af37] hover:bg-white"
+                              )}
+                            >
+                              <div className="space-y-0.5">
+                                <span className={cn(
+                                  "font-bold text-sm block",
+                                  isSelected ? "text-[#d4af37]" : "text-[#2c1810]"
+                                )}>
+                                  {displayTableName}
+                                </span>
+                                <p className={cn(
+                                  "text-xs font-mono",
+                                  isSelected ? "text-[#c2b2a6]" : "text-[#8b7355]"
+                                )}>
+                                  {tableOrders.length} {tableOrders.length === 1 ? "Booking" : "Bookings"}
+                                </p>
+                              </div>
+
+                              <span className={cn(
+                                "text-xs font-bold font-mono px-2.5 py-1 rounded-lg",
+                                isSelected ? "bg-[#d4af37] text-[#140c0a]" : "bg-[#e5d5c5] text-[#2c1810]"
+                              )}>
+                                Rs {tableTotalRevenue.toFixed(0)}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Bookings for Selected Table (Independent Scroll) */}
+                    <div className="md:col-span-8 bg-white rounded-3xl p-4 sm:p-6 shadow-sm border border-[#e5d5c5] space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-4 border-b border-[#e5d5c5] gap-2">
+                        <div>
+                          <h4 className="text-lg font-serif font-bold text-[#2c1810] flex items-center gap-2">
+                            <span className="px-3 py-1 bg-[#2c1810] text-[#d4af37] text-xs font-bold rounded-full">
+                              {activeCompletedTable?.toLowerCase().startsWith("table") ? activeCompletedTable : `Table ${activeCompletedTable}`}
+                            </span>
+                            Completed Bookings
+                          </h4>
+                          <p className="text-xs text-[#8b7355]">
+                            Showing completed order bills specifically for this table.
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-mono text-[#8b7355]">
+                            Table Total: <strong className="text-sm font-bold text-[#2c1810]">Rs {
+                              completedOrdersList
+                                .filter(o => o.tableNumber?.toString().trim() === activeCompletedTable)
+                                .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+                                .toFixed(2)
+                            }</strong>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right Independent Scroll */}
+                      <div className="overflow-y-auto max-h-[60vh] md:max-h-[calc(100vh-280px)] space-y-4 pr-1 no-scrollbar">
+                        {completedOrdersList
+                          .filter(o => o.tableNumber?.toString().trim() === activeCompletedTable)
+                          .map((order) => (
+                            <div key={order.id} className="bg-[#fdfaf6] rounded-2xl p-4 sm:p-5 border border-[#e5d5c5] space-y-4 hover:shadow-sm transition-all">
+                              {/* Booking Header */}
+                              <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-2">
+                                  <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border bg-green-50 text-green-700 border-green-200">
+                                    completed
+                                  </span>
+                                  <span className="text-xs font-mono text-[#8b7355]">
+                                    INV-{order.id.slice(-6).toUpperCase()}
+                                  </span>
+                                </div>
+                                <span className="text-xs font-bold text-[#2c1810] bg-white border border-[#e5d5c5] px-2.5 py-1 rounded-xl flex items-center gap-1.5 font-mono shadow-2xs">
+                                  <Clock size={13} className="text-[#d4af37]" />
+                                  {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                </span>
+                              </div>
+
+                              {/* Customer Details */}
+                              <div className="bg-white p-3 rounded-xl border border-[#e5d5c5] flex justify-between items-center text-xs">
+                                <div>
+                                  <span className="text-[#8b7355] font-bold">Customer: </span>
+                                  <span className="font-bold text-[#2c1810]">{order.customerName || 'Guest'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-[#8b7355] font-bold">Phone: </span>
+                                  <a href={`tel:${order.customerPhone}`} className="font-bold text-[#2c1810] hover:text-[#d4af37] font-mono">
+                                    {order.customerPhone}
+                                  </a>
+                                </div>
+                              </div>
+
+                              {/* Items List */}
+                              <div className="space-y-1.5">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[#8b7355]">Ordered Dishes</p>
+                                <div className="divide-y divide-[#e5d5c5] bg-white rounded-xl p-3 border border-[#e5d5c5]">
+                                  {order.items?.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between items-center py-1 text-xs">
+                                      <span className="font-medium text-[#2c1810]">
+                                        <span className="font-bold text-[#d4af37] mr-2">{item.quantity}x</span>
+                                        {item.name}
+                                      </span>
+                                      <span className="font-bold text-[#5c4033]">
+                                        Rs {(item.subtotal || (item.price * item.quantity)).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Total & Action */}
+                              <div className="pt-3 border-t border-[#e5d5c5] flex justify-between items-center">
+                                <div>
+                                  <span className="text-[10px] uppercase font-bold text-[#8b7355]">Total: </span>
+                                  <span className="text-base font-bold text-[#2c1810]">Rs {order.totalAmount?.toFixed(2)}</span>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    setSelectedOrderIds([order.id]);
+                                    setIsBulkPrintModalOpen(true);
+                                  }}
+                                  className="bg-[#2c1810] text-[#d4af37] border border-[#d4af37]/40 hover:bg-[#4a2c1d] px-4 py-2 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center gap-1.5"
+                                >
+                                  <Receipt size={14} className="text-[#d4af37]" />
+                                  Print GST Bill
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )
+            ) : orderRequests.filter(o => o.status === orderSubTab).length === 0 ? (
               <div className="bg-white p-12 rounded-3xl shadow-sm border border-[#e5d5c5] text-center space-y-4">
                 <div className="w-16 h-16 bg-[#fdfaf6] text-[#8b7355] border border-[#e5d5c5] rounded-2xl flex items-center justify-center mx-auto">
                   <ShoppingBag size={32} />
@@ -1137,30 +1502,30 @@ export default function AdminDashboard() {
       {/* Add/Edit Item Modal */}
       <AnimatePresence>
         {(isAddingItem || isEditingItem) && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setIsAddingItem(false); setIsEditingItem(null); }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative bg-[#fdfaf6] w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-[#e5d5c5]"
+              className="relative bg-[#fdfaf6] w-full max-w-2xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-[#e5d5c5] max-h-[90vh] flex flex-col z-10"
             >
-              <div className="p-8 border-b border-[#e5d5c5] flex justify-between items-center bg-white">
-                <h3 className="text-2xl font-serif font-bold text-[#2c1810]">
+              <div className="p-4 sm:p-8 border-b border-[#e5d5c5] flex justify-between items-center bg-white shrink-0">
+                <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#2c1810]">
                   {isEditingItem ? "Edit Menu Item" : "Add New Menu Item"}
                 </h3>
                 <button onClick={() => { setIsAddingItem(false); setIsEditingItem(null); }} className="p-2 text-[#8b7355] hover:text-[#2c1810]">
-                  <X size={24} />
+                  <X size={20} className="sm:w-6 sm:h-6" />
                 </button>
               </div>
-              <form onSubmit={handleAddItem} className="p-8 space-y-6">
-                <div className="grid grid-cols-2 gap-6">
+              <form onSubmit={handleAddItem} className="p-4 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-[#8b7355]">Item Name</label>
                     <input 
@@ -1256,29 +1621,29 @@ export default function AdminDashboard() {
         )}
 
         {(isAddingCategory || isEditingCategory) && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setIsAddingCategory(false); setIsEditingCategory(null); }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative bg-[#fdfaf6] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-[#e5d5c5]"
+              className="relative bg-[#fdfaf6] w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-[#e5d5c5] max-h-[90vh] flex flex-col z-10"
             >
-              <div className="p-8 border-b border-[#e5d5c5] flex justify-between items-center bg-white">
-                <h3 className="text-2xl font-serif font-bold text-[#2c1810]">
+              <div className="p-4 sm:p-8 border-b border-[#e5d5c5] flex justify-between items-center bg-white shrink-0">
+                <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#2c1810]">
                   {isEditingCategory ? "Edit Category" : "Add Category"}
                 </h3>
                 <button onClick={() => { setIsAddingCategory(false); setIsEditingCategory(null); }} className="p-2 text-[#8b7355] hover:text-[#2c1810]">
-                  <X size={24} />
+                  <X size={20} className="sm:w-6 sm:h-6" />
                 </button>
               </div>
-              <form onSubmit={handleAddCategory} className="p-8 space-y-6">
+              <form onSubmit={handleAddCategory} className="p-4 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-[#8b7355]">Category Name</label>
                   <input 
@@ -1312,29 +1677,29 @@ export default function AdminDashboard() {
           </div>
         )}
         {(isAddingTable || isEditingTable) && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setIsAddingTable(false); setIsEditingTable(null); }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative bg-[#fdfaf6] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-[#e5d5c5]"
+              className="relative bg-[#fdfaf6] w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-[#e5d5c5] max-h-[90vh] flex flex-col z-10"
             >
-              <div className="p-8 border-b border-[#e5d5c5] flex justify-between items-center bg-white">
-                <h3 className="text-2xl font-serif font-bold text-[#2c1810]">
+              <div className="p-4 sm:p-8 border-b border-[#e5d5c5] flex justify-between items-center bg-white shrink-0">
+                <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#2c1810]">
                   {isEditingTable ? "Modify Table" : "Add New Table"}
                 </h3>
                 <button onClick={() => { setIsAddingTable(false); setIsEditingTable(null); }} className="p-2 text-[#8b7355] hover:text-[#2c1810]">
-                  <X size={24} />
+                  <X size={20} className="sm:w-6 sm:h-6" />
                 </button>
               </div>
-              <form onSubmit={handleAddTable} className="p-8 space-y-6">
+              <form onSubmit={handleAddTable} className="p-4 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-[#8b7355]">Table Display Name</label>
                   <input 

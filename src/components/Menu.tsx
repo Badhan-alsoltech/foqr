@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { seedDummyData, db, handleFirestoreError, OperationType } from "../firebase";
 import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, ShoppingBag, Menu as MenuIcon, X, Shield, Plus, Minus, Trash2, CheckCircle2, Phone, User as UserIcon, ChevronRight, Sparkles, Flame, Eye, LayoutList, LayoutGrid, Filter, RotateCcw } from "lucide-react";
+import { Search, ShoppingBag, Menu as MenuIcon, X, Shield, Plus, Minus, Trash2, CheckCircle2, Phone, User as UserIcon, ChevronRight, Sparkles, Flame, Eye, LayoutList, LayoutGrid, Filter, RotateCcw, AlertCircle } from "lucide-react";
 import { cn } from "../lib/utils";
 
 interface Category {
@@ -84,6 +84,7 @@ export default function Menu() {
   const [phoneError, setPhoneError] = useState("");
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [activeOrders, setActiveOrders] = useState<any[]>([]);
 
   const [settings, setSettings] = useState({
     spicyLabel: "Spicy",
@@ -153,18 +154,37 @@ export default function Menu() {
       }
     });
 
+    const ordersQuery = query(collection(db, "orderRequests"));
+    const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
+      const fetchedOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setActiveOrders(fetchedOrders);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, "orderRequests");
+    });
+
     return () => {
       clearTimeout(loadingTimeout);
       unsubscribeCats();
       unsubscribeItems();
       unsubscribeTables();
       unsubscribeSettings();
+      unsubscribeOrders();
     };
   }, [tableParam]);
 
   const displayTableName = tableName || 
     tables.find(t => String(t.tableNumber) === String(tableNumber) || t.id === tableNumber)?.name || 
     (String(tableNumber).toLowerCase().includes("table") ? tableNumber : `Table ${tableNumber}`);
+
+  const targetTableClean = (tableName || displayTableName || tableNumber || tableParam || "").toString().toLowerCase().replace("table", "").trim();
+
+  const activeTableOrder = activeOrders.find(o => {
+    if (o.status !== "pending" && o.status !== "approved") return false;
+    const orderTableClean = (o.tableNumber || "").toString().toLowerCase().replace("table", "").trim();
+    return orderTableClean === targetTableClean || o.tableNumber === tableName || o.tableNumber === displayTableName;
+  });
+
+  const isTableOccupied = Boolean(activeTableOrder);
 
   const filteredItems = menuItems.filter(item => {
     const matchesCategory = selectedCategory ? item.categoryId === selectedCategory : true;
@@ -241,6 +261,10 @@ export default function Menu() {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isTableOccupied) {
+      alert(`Table ${displayTableName} is currently occupied with an active order in progress. You cannot place a new order until the current table session is completed by staff.`);
+      return;
+    }
     if (!customerName.trim()) {
       alert("Please enter your name.");
       return;
@@ -310,6 +334,21 @@ export default function Menu() {
           <p className="text-xs sm:text-sm text-[#bcaaa0] max-w-xl mx-auto font-light leading-relaxed">
             Handcrafted dishes, authentic flavors & culinary excellence at your fingertips.
           </p>
+
+          {isTableOccupied && (
+            <div className="bg-amber-500/20 border-2 border-amber-500/60 text-amber-200 p-4 rounded-2xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-medium shadow-xl animate-pulse max-w-xl mx-auto mt-4 text-left">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="text-amber-400 shrink-0" size={24} />
+                <div>
+                  <p className="font-extrabold text-amber-300 text-sm">Table {displayTableName} is Occupied</p>
+                  <p className="text-[11px] text-amber-200/90 leading-tight">An active order is currently in progress for this table. New orders cannot be placed until staff completes the current order session.</p>
+                </div>
+              </div>
+              <span className="px-3 py-1 bg-amber-500/30 border border-amber-400/50 rounded-lg text-[10px] uppercase font-bold text-amber-300 shrink-0 self-start sm:self-center">
+                OCCUPIED
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1172,15 +1211,25 @@ export default function Menu() {
                   <button
                     type="submit"
                     form="checkout-form"
-                    disabled={isSubmittingOrder}
-                    className="w-full bg-gradient-to-r from-[#140c0a] to-[#2c1810] text-[#d4af37] border border-[#d4af37]/40 py-4 rounded-xl font-extrabold shadow-xl hover:brightness-125 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    disabled={isSubmittingOrder || isTableOccupied}
+                    className={cn(
+                      "w-full border py-4 rounded-xl font-extrabold shadow-xl transition-all flex items-center justify-center gap-2",
+                      isTableOccupied
+                        ? "bg-red-900/80 border-red-500/50 text-red-200 opacity-80 cursor-not-allowed"
+                        : "bg-gradient-to-r from-[#140c0a] to-[#2c1810] text-[#d4af37] border-[#d4af37]/40 hover:brightness-125 disabled:opacity-50"
+                    )}
                   >
-                    {isSubmittingOrder ? (
+                    {isTableOccupied ? (
+                      <>
+                        <AlertCircle size={18} className="text-red-400" />
+                        Table Currently Occupied
+                      </>
+                    ) : isSubmittingOrder ? (
                       <span>Sending Request...</span>
                     ) : (
                       <>
-                        <CheckCircle2 size={18} className="text-[#d4af37]" />
-                        Submit Order Request
+                        <ShoppingBag size={18} />
+                        Send Order Request (₹{cartTotal.toFixed(2)})
                       </>
                     )}
                   </button>
