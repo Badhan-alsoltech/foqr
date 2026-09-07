@@ -4,7 +4,7 @@ import { seedDummyData, db, handleFirestoreError, OperationType } from "../fireb
 import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, ShoppingBag, Menu as MenuIcon, X, Shield, Plus, Minus, Trash2, CheckCircle2, Phone, User as UserIcon, ChevronRight, Sparkles, Flame, Eye, LayoutList, LayoutGrid, Filter, RotateCcw, AlertCircle } from "lucide-react";
-import { cn } from "../lib/utils";
+import { cn, normalizeImageUrl } from "../lib/utils";
 
 interface Category {
   id: string;
@@ -22,6 +22,8 @@ interface MenuItem {
   isAvailable: boolean;
   isSpicy: boolean;
   isVegetarian: boolean;
+  tags?: string[];
+  recommendedItemIds?: string[];
   isSignature?: boolean;
   views?: number;
 }
@@ -56,7 +58,8 @@ function FoodTypeBadge({ isVegetarian }: { isVegetarian: boolean }) {
 export default function Menu() {
   const { tableId } = useParams<{ tableId: string }>();
   const navigate = useNavigate();
-  const tableParam = tableId || "1";
+  const hasTableSelected = Boolean(tableId);
+  const tableParam = tableId || null;
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -172,9 +175,11 @@ export default function Menu() {
     };
   }, [tableParam]);
 
-  const displayTableName = tableName || 
-    tables.find(t => String(t.tableNumber) === String(tableNumber) || t.id === tableNumber)?.name || 
-    (String(tableNumber).toLowerCase().includes("table") ? tableNumber : `Table ${tableNumber}`);
+  const displayTableName = hasTableSelected
+    ? (tableName || 
+       tables.find(t => String(t.tableNumber) === String(tableNumber) || t.id === tableNumber)?.name || 
+       (String(tableNumber).toLowerCase().includes("table") ? tableNumber : `Table ${tableNumber}`))
+    : "No Table Selected";
 
   const targetTableClean = (tableName || displayTableName || tableNumber || tableParam || "").toString().toLowerCase().replace("table", "").trim();
 
@@ -261,6 +266,10 @@ export default function Menu() {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasTableSelected) {
+      alert("No table selected! Ordering is disabled. Please scan your Table QR Code to place an order.");
+      return;
+    }
     if (isTableOccupied) {
       alert(`Table ${displayTableName} is currently occupied with an active order in progress. You cannot place a new order until the current table session is completed by staff.`);
       return;
@@ -327,15 +336,38 @@ export default function Menu() {
             </span>
           </div>
 
-          <h1 className="font-serif font-extrabold text-4xl sm:text-6xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fdfaf6] to-[#d4af37]">
-            foQR
-          </h1>
+          <div className="flex flex-col items-center gap-2">
+            {(settings as any).logoUrl && (
+              <img 
+                src={normalizeImageUrl((settings as any).logoUrl)} 
+                alt="Restaurant Logo" 
+                className="h-14 sm:h-18 max-w-[200px] object-contain drop-shadow-lg rounded-lg"
+                referrerPolicy="no-referrer"
+              />
+            )}
+            <h1 className="font-serif font-extrabold text-4xl sm:text-6xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fdfaf6] to-[#d4af37]">
+              {(settings as any).restaurantName || "foQR"}
+            </h1>
+          </div>
 
           <p className="text-xs sm:text-sm text-[#bcaaa0] max-w-xl mx-auto font-light leading-relaxed">
-            Handcrafted dishes, authentic flavors & culinary excellence at your fingertips.
+            {(settings as any).restaurantSubtitle || "Handcrafted dishes, authentic flavors & culinary excellence at your fingertips."}
           </p>
 
-          {isTableOccupied && (
+          {!hasTableSelected ? (
+            <div className="bg-amber-500/20 border-2 border-amber-500/60 text-amber-200 p-4 rounded-2xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-medium shadow-xl max-w-xl mx-auto mt-4 text-left">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="text-amber-400 shrink-0" size={24} />
+                <div>
+                  <p className="font-extrabold text-amber-300 text-sm">No Table Selected</p>
+                  <p className="text-[11px] text-amber-200/90 leading-tight">Please scan your Table QR code to place an order. Browsing mode active.</p>
+                </div>
+              </div>
+              <span className="px-3 py-1 bg-amber-500/30 border border-amber-400/50 rounded-lg text-[10px] uppercase font-bold text-amber-300 shrink-0 self-start sm:self-center">
+                VIEW ONLY
+              </span>
+            </div>
+          ) : isTableOccupied ? (
             <div className="bg-amber-500/20 border-2 border-amber-500/60 text-amber-200 p-4 rounded-2xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-medium shadow-xl animate-pulse max-w-xl mx-auto mt-4 text-left">
               <div className="flex items-center gap-3">
                 <AlertCircle className="text-amber-400 shrink-0" size={24} />
@@ -348,7 +380,7 @@ export default function Menu() {
                 OCCUPIED
               </span>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -573,6 +605,50 @@ export default function Menu() {
                             </button>
                           )}
                         </div>
+
+                        {/* Recommended Best Combo Items for this Card (Only shown after item is added to cart) */}
+                        {(() => {
+                          if (!cartEntry) return null;
+
+                          const cardRecommendations = (item.recommendedItemIds || [])
+                            .map(id => menuItems.find(m => m.id === id))
+                            .filter((rec): rec is MenuItem => Boolean(rec))
+                            .filter(rec => !cart.some(c => c.item.id === rec.id));
+
+                          if (cardRecommendations.length === 0) return null;
+
+                          return (
+                            <div className="mt-2.5 pt-2 border-t border-dashed border-[#e5d5c5]/40 space-y-1.5">
+                              <div className="flex items-center gap-1 text-[10px] font-bold text-[#b8860b]">
+                                <Sparkles size={11} className="text-[#d4af37]" />
+                                <span>Pairs Best With (Best Combo):</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {cardRecommendations.map(rec => (
+                                  <div 
+                                    key={rec.id} 
+                                    className={cn(
+                                      "flex items-center justify-between gap-2 px-2.5 py-1 rounded-lg border text-[10px] font-medium w-full sm:w-auto",
+                                      isSignature ? "bg-[#281a16] border-[#d4af37]/30 text-white" : "bg-[#fdfaf6] border-[#e5d5c5] text-[#2c1810]"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-1.5 truncate">
+                                      <FoodTypeBadge isVegetarian={rec.isVegetarian} />
+                                      <span className="font-bold truncate">{rec.name}</span>
+                                      <span className="text-[#b8860b] font-mono text-[10px]">₹{rec.price}</span>
+                                    </div>
+                                    <button
+                                      onClick={() => addToCart(rec)}
+                                      className="px-2 py-0.5 bg-[#140c0a] text-[#d4af37] rounded-md text-[9px] font-bold hover:bg-[#2c1810] transition-colors shrink-0 flex items-center gap-0.5 shadow-xs"
+                                    >
+                                      <Plus size={10} /> Add
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </motion.div>
                     );
                   })}
@@ -601,7 +677,7 @@ export default function Menu() {
                           {item.imageUrl && (
                             <div className="relative w-full h-32 rounded-xl overflow-hidden mb-2.5 border border-black/10">
                               <img 
-                                src={item.imageUrl} 
+                                src={normalizeImageUrl(item.imageUrl)} 
                                 alt={item.name} 
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                                 referrerPolicy="no-referrer"
@@ -682,6 +758,50 @@ export default function Menu() {
                             </button>
                           )}
                         </div>
+
+                        {/* Recommended Best Combo Items for this Card (Only shown after item is added to cart) */}
+                        {(() => {
+                          if (!cartEntry) return null;
+
+                          const cardRecommendations = (item.recommendedItemIds || [])
+                            .map(id => menuItems.find(m => m.id === id))
+                            .filter((rec): rec is MenuItem => Boolean(rec))
+                            .filter(rec => !cart.some(c => c.item.id === rec.id));
+
+                          if (cardRecommendations.length === 0) return null;
+
+                          return (
+                            <div className="mt-2.5 pt-2 border-t border-dashed border-[#e5d5c5]/40 space-y-1.5">
+                              <div className="flex items-center gap-1 text-[10px] font-bold text-[#b8860b]">
+                                <Sparkles size={11} className="text-[#d4af37]" />
+                                <span>Pairs Best With (Best Combo):</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {cardRecommendations.map(rec => (
+                                  <div 
+                                    key={rec.id} 
+                                    className={cn(
+                                      "flex items-center justify-between gap-2 px-2 py-1 rounded-lg border text-[10px] font-medium w-full",
+                                      isSignature ? "bg-[#281a16] border-[#d4af37]/30 text-white" : "bg-[#fdfaf6] border-[#e5d5c5] text-[#2c1810]"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-1.5 truncate">
+                                      <FoodTypeBadge isVegetarian={rec.isVegetarian} />
+                                      <span className="font-bold truncate">{rec.name}</span>
+                                      <span className="text-[#b8860b] font-mono">₹{rec.price}</span>
+                                    </div>
+                                    <button
+                                      onClick={() => addToCart(rec)}
+                                      className="px-2 py-0.5 bg-[#140c0a] text-[#d4af37] rounded-md text-[9px] font-bold hover:bg-[#2c1810] transition-colors shrink-0 flex items-center gap-0.5 shadow-xs"
+                                    >
+                                      <Plus size={10} /> Add
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </motion.div>
                     );
                   })}
@@ -968,7 +1088,7 @@ export default function Menu() {
               {viewingItem.imageUrl && (
                 <div className="aspect-video overflow-hidden relative">
                   <img 
-                    src={viewingItem.imageUrl}
+                    src={normalizeImageUrl(viewingItem.imageUrl)}
                     alt={viewingItem.name}
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
@@ -999,6 +1119,44 @@ export default function Menu() {
                 <p className="text-sm text-[#5c4033] leading-relaxed">
                   {viewingItem.description}
                 </p>
+
+                {/* Best Combo Recommendations for this dish */}
+                {(() => {
+                  const itemRecommendations = (viewingItem.recommendedItemIds || [])
+                    .map(id => menuItems.find(m => m.id === id))
+                    .filter((item): item is MenuItem => Boolean(item))
+                    .filter(recItem => !cart.some(c => c.item.id === recItem.id));
+
+                  if (itemRecommendations.length === 0) return null;
+
+                  return (
+                    <div className="space-y-2 pt-3 border-t border-[#e5d5c5]">
+                      <h4 className="text-xs font-serif font-bold text-[#140c0a] flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-[#d4af37]" />
+                        Best Combo with this Dish
+                      </h4>
+                      <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                        {itemRecommendations.map(rec => (
+                          <div key={rec.id} className="flex items-center justify-between p-2.5 bg-[#fdfaf6] rounded-xl border border-[#e5d5c5]">
+                            <div className="flex items-center gap-2.5">
+                              <FoodTypeBadge isVegetarian={rec.isVegetarian} />
+                              <div>
+                                <p className="text-xs font-bold text-[#140c0a]">{rec.name}</p>
+                                <p className="text-[10px] text-[#b8860b] font-bold font-mono">₹{rec.price}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => addToCart(rec)}
+                              className="px-3 py-1 bg-[#140c0a] text-[#d4af37] rounded-lg text-xs font-bold hover:bg-[#2c1810] flex items-center gap-1 shadow-xs"
+                            >
+                              <Plus size={12} /> Add
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className="flex gap-3 pt-2">
                   <button 
                     onClick={() => {
@@ -1098,7 +1256,7 @@ export default function Menu() {
                         <div key={item.id} className="flex items-center justify-between bg-white p-4 rounded-2xl border border-[#e5d5c5] shadow-sm">
                           <div className="flex items-center gap-3 overflow-hidden">
                             {item.imageUrl && (
-                              <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
+                              <img src={normalizeImageUrl(item.imageUrl)} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
                             )}
                             <div className="overflow-hidden">
                               <p className="text-sm font-extrabold text-[#140c0a] truncate">{item.name}</p>
@@ -1124,7 +1282,60 @@ export default function Menu() {
                       ))}
                     </div>
 
+                    {/* Best Combo / Recommended Additions for Cart */}
+                    {(() => {
+                      const cartRecommendedIds = Array.from(
+                        new Set(cart.flatMap(c => c.item.recommendedItemIds || []))
+                      );
+
+                      const unaddedRecommendations = menuItems.filter(m => 
+                        cartRecommendedIds.includes(m.id) && !cart.some(c => c.item.id === m.id)
+                      );
+
+                      if (unaddedRecommendations.length === 0) return null;
+
+                      return (
+                        <div className="p-4 bg-[#fdfaf6] rounded-2xl border border-[#d4af37]/40 space-y-3 shadow-xs">
+                          <div className="flex items-center gap-1.5 text-xs font-serif font-extrabold text-[#140c0a]">
+                            <Sparkles size={16} className="text-[#d4af37]" />
+                            <span>Pairs Best with Your Order (Best Combos)</span>
+                          </div>
+                          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            {unaddedRecommendations.map(rec => (
+                              <div key={rec.id} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-[#e5d5c5]">
+                                <div className="flex items-center gap-2.5 overflow-hidden">
+                                  {rec.imageUrl ? (
+                                    <img src={normalizeImageUrl(rec.imageUrl)} alt={rec.name} className="w-10 h-10 rounded-lg object-cover" />
+                                  ) : (
+                                    <FoodTypeBadge isVegetarian={rec.isVegetarian} />
+                                  )}
+                                  <div className="overflow-hidden">
+                                    <p className="text-xs font-bold text-[#140c0a] truncate">{rec.name}</p>
+                                    <p className="text-[10px] text-[#b8860b] font-bold font-mono">₹{rec.price}</p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => addToCart(rec)}
+                                  className="px-3 py-1.5 bg-[#140c0a] text-[#d4af37] rounded-lg text-xs font-bold hover:bg-[#2c1810] transition-colors shadow-xs flex items-center gap-1 shrink-0"
+                                >
+                                  <Plus size={12} /> Add
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <form onSubmit={handleSubmitOrder} id="checkout-form" className="space-y-4 pt-4 border-t border-[#e5d5c5]">
+                      {!hasTableSelected && (
+                        <div className="p-3 bg-amber-50 border border-amber-300/80 rounded-xl text-amber-900 text-xs flex items-center gap-2 font-medium">
+                          <AlertCircle size={18} className="text-amber-600 shrink-0" />
+                          <span>No table selected! Please scan your Table QR code to place an order.</span>
+                        </div>
+                      )}
+                      
                       <h4 className="text-xs font-extrabold uppercase tracking-widest text-[#8b7355]">Customer Information</h4>
                       
                       <div className="space-y-1.5">
@@ -1137,7 +1348,8 @@ export default function Menu() {
                             placeholder="Enter your full name"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
-                            className="w-full bg-white border border-[#e5d5c5] rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40"
+                            disabled={!hasTableSelected}
+                            className="w-full bg-white border border-[#e5d5c5] rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 disabled:bg-gray-100 disabled:cursor-not-allowed"
                           />
                         </div>
                       </div>
@@ -1155,8 +1367,9 @@ export default function Menu() {
                             value={customerPhone}
                             onChange={handlePhoneChange}
                             maxLength={10}
+                            disabled={!hasTableSelected}
                             className={cn(
-                              "w-full bg-white border rounded-xl pl-20 pr-12 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 font-mono tracking-wider",
+                              "w-full bg-white border rounded-xl pl-20 pr-12 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 font-mono tracking-wider disabled:bg-gray-100 disabled:cursor-not-allowed",
                               phoneError ? "border-red-500" : "border-[#e5d5c5]"
                             )}
                           />
@@ -1164,33 +1377,6 @@ export default function Menu() {
                             {customerPhone.length}/10
                           </span>
                         </div>
-                        {phoneError && (
-                          <p className="text-[11px] text-red-500 font-medium pt-0.5">{phoneError}</p>
-                        )}
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-[#5c4033]">Table Display Name *</label>
-                        {tables.length > 0 ? (
-                          <select
-                            value={tableName || displayTableName}
-                            onChange={(e) => setTableName(e.target.value)}
-                            className="w-full bg-white border border-[#e5d5c5] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40"
-                          >
-                            {tables.map(t => (
-                              <option key={t.id} value={t.name}>{t.name} {t.location ? `(${t.location})` : ''}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type="text"
-                            required
-                            value={tableName || displayTableName}
-                            onChange={(e) => setTableName(e.target.value)}
-                            className="w-full bg-white border border-[#e5d5c5] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40"
-                            placeholder="e.g. Table 1"
-                          />
-                        )}
                       </div>
                     </form>
                   </>
@@ -1211,15 +1397,22 @@ export default function Menu() {
                   <button
                     type="submit"
                     form="checkout-form"
-                    disabled={isSubmittingOrder || isTableOccupied}
+                    disabled={isSubmittingOrder || isTableOccupied || !hasTableSelected}
                     className={cn(
                       "w-full border py-4 rounded-xl font-extrabold shadow-xl transition-all flex items-center justify-center gap-2",
-                      isTableOccupied
+                      !hasTableSelected
+                        ? "bg-stone-800 border-stone-600 text-stone-300 opacity-90 cursor-not-allowed"
+                        : isTableOccupied
                         ? "bg-red-900/80 border-red-500/50 text-red-200 opacity-80 cursor-not-allowed"
                         : "bg-gradient-to-r from-[#140c0a] to-[#2c1810] text-[#d4af37] border-[#d4af37]/40 hover:brightness-125 disabled:opacity-50"
                     )}
                   >
-                    {isTableOccupied ? (
+                    {!hasTableSelected ? (
+                      <>
+                        <AlertCircle size={18} className="text-amber-400" />
+                        Scan Table QR Code to Order
+                      </>
+                    ) : isTableOccupied ? (
                       <>
                         <AlertCircle size={18} className="text-red-400" />
                         Table Currently Occupied

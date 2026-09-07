@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { auth, db, handleFirestoreError, OperationType, logout } from "../firebase";
+import { db, handleFirestoreError, OperationType, getAdminSession, logoutAdmin } from "../firebase";
 import { collection, onSnapshot, query, orderBy, doc, getDoc, Timestamp } from "firebase/firestore";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { User } from "firebase/auth";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   LayoutDashboard, Utensils, QrCode, BarChart3, Settings, LogOut,
@@ -53,14 +53,15 @@ export default function TableHistory() {
       setLoading(false);
     }, 2000);
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
-      if (!u) navigate("/login");
-      setUser(u);
-    });
+    const session = getAdminSession();
+    if (!session) {
+      navigate("/login");
+    } else {
+      setUser({ uid: "admin", email: "admin@hotel.com", displayName: session.userId } as any);
+    }
 
     return () => {
       clearTimeout(loadingTimeout);
-      unsubscribeAuth();
     };
   }, [navigate]);
 
@@ -110,7 +111,7 @@ export default function TableHistory() {
   }, [allOrders, table]);
 
   const handleLogout = async () => {
-    await logout();
+    logoutAdmin();
     navigate("/login");
   };
 

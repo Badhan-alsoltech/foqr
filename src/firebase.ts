@@ -11,6 +11,53 @@ export const googleProvider = new GoogleAuthProvider();
 export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const logout = () => signOut(auth);
 
+// Admin Credentials Authentication in Firestore
+export async function verifyAdminCredentials(userIdInput: string, passwordInput: string): Promise<boolean> {
+  try {
+    const credRef = doc(db, "admin", "credentials");
+    const credSnap = await getDoc(credRef);
+    
+    if (!credSnap.exists()) {
+      const defaultCreds = { userId: "admin", username: "admin", password: "admin" };
+      await setDoc(credRef, defaultCreds);
+      return (userIdInput.trim() === "admin" && passwordInput.trim() === "admin");
+    }
+    
+    const data = credSnap.data();
+    const validUser = data.userId || data.username || "admin";
+    const validPass = data.password || "admin";
+    
+    return (userIdInput.trim() === validUser && passwordInput.trim() === validPass);
+  } catch (error) {
+    console.error("Error verifying admin credentials:", error);
+    if (userIdInput.trim() === "admin" && passwordInput.trim() === "admin") {
+      return true;
+    }
+    return false;
+  }
+}
+
+export function setAdminSession(user: { userId: string } | null) {
+  if (user) {
+    localStorage.setItem("admin_user", JSON.stringify(user));
+  } else {
+    localStorage.removeItem("admin_user");
+  }
+}
+
+export function getAdminSession(): { userId: string } | null {
+  try {
+    const item = localStorage.getItem("admin_user");
+    return item ? JSON.parse(item) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function logoutAdmin() {
+  localStorage.removeItem("admin_user");
+}
+
 // Test connection
 async function testConnection() {
   try {
@@ -154,6 +201,13 @@ export async function seedDummyData() {
         createdAt: serverTimestamp()
       });
     }
+
+    // 5. Add default admin credentials
+    await setDoc(doc(db, "admin", "credentials"), {
+      userId: "admin",
+      username: "admin",
+      password: "admin"
+    });
 
     console.log("Indian Hotel Menu Seeding completed successfully!");
   } catch (error) {
