@@ -426,8 +426,8 @@ export default function AdminDashboard() {
         setIsAddingTable(false);
       }
     } catch (error) {
-      console.error("Failed to save table to Firestore:", error);
-      alert("Failed to save table to Firestore: " + (error instanceof Error ? error.message : String(error)));
+      console.error("Failed to save table:", error);
+      alert("Failed to save table: " + (error instanceof Error ? error.message : String(error)));
     }
   };
 
@@ -924,7 +924,7 @@ export default function AdminDashboard() {
             { id: "qr", icon: QrCode, label: "QR Codes" },
             { id: "analytics", icon: BarChart3, label: "Analytics" },
             { id: "profile", icon: Store, label: "Restaurant Profile" },
-            { id: "settings", icon: Settings, label: "Menu Tags" },
+            { id: "settings", icon: Settings, label: "Settings" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1919,9 +1919,9 @@ export default function AdminDashboard() {
                 <div className="w-16 h-16 bg-[#fdfaf6] text-[#d4af37] border border-[#e5d5c5] rounded-2xl flex items-center justify-center mx-auto">
                   <QrCode size={32} />
                 </div>
-                <h4 className="text-xl font-serif font-bold text-[#2c1810]">No Tables Found in Firestore</h4>
+                <h4 className="text-xl font-serif font-bold text-[#2c1810]">No Tables Found</h4>
                 <p className="text-sm text-[#8b7355] max-w-md mx-auto">
-                  Add your restaurant tables below. Every table added will be stored directly into your Firebase Firestore database.
+                  Add your restaurant tables below. Every table added will be stored directly into your system database.
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 pt-2">
                   <button 
@@ -1929,13 +1929,13 @@ export default function AdminDashboard() {
                     className="flex items-center gap-2 bg-[#2c1810] text-[#fdfaf6] px-6 py-3 rounded-xl hover:bg-[#4a2c1d] transition-all text-sm font-medium shadow-lg"
                   >
                     <Plus size={18} />
-                    Add Table to Firestore
+                    Add Table
                   </button>
                   <button 
                     onClick={seedDefaultTables}
                     className="flex items-center gap-2 bg-[#fdfaf6] border border-[#e5d5c5] text-[#2c1810] px-6 py-3 rounded-xl hover:bg-white transition-all text-sm font-medium"
                   >
-                    Seed Standard Tables (1-6) to Firestore
+                    Seed Standard Tables (1-6)
                   </button>
                 </div>
               </div>
@@ -2259,11 +2259,33 @@ export default function AdminDashboard() {
           });
 
           const dishBarData = Object.values(dishQtyMap)
-            .filter(d => d.quantity > 0 || menuItems.length <= 10)
-            .sort((a, b) => b.quantity - a.quantity)
-            .slice(0, 10);
+            .sort((a, b) => b.quantity - a.quantity || a.name.localeCompare(b.name));
 
           const maxQuantity = Math.max(...dishBarData.map(d => d.quantity), 5);
+          const barSvgWidth = Math.max(750, 60 + dishBarData.length * 55 + 30);
+          const chartEndX = barSvgWidth - 20;
+
+          // 8. Most Selling vs Least Selling Performance Lists
+          const allDishPerformance = menuItems.map(item => {
+            const data = dishQtyMap[item.name] || { quantity: 0, revenue: 0 };
+            return {
+              id: item.id,
+              name: item.name,
+              price: item.price || 0,
+              imageUrl: item.imageUrl,
+              views: item.views || 0,
+              quantityOrdered: data.quantity,
+              totalRevenue: data.revenue,
+            };
+          });
+
+          const mostSellingItems = [...allDishPerformance]
+            .sort((a, b) => (b.quantityOrdered - a.quantityOrdered) || (b.totalRevenue - a.totalRevenue) || (b.views - a.views))
+            .slice(0, 5);
+
+          const leastSellingItems = [...allDishPerformance]
+            .sort((a, b) => (a.quantityOrdered - b.quantityOrdered) || (a.totalRevenue - b.totalRevenue) || (a.views - b.views))
+            .slice(0, 5);
 
           return (
             <div className="space-y-8">
@@ -2357,7 +2379,7 @@ export default function AdminDashboard() {
                       <TrendingUp size={22} className="text-[#d4af37]" />
                       Dynamic {timeRange === "1d" ? "24-Hour" : timeRange === "7d" ? "7-Day" : timeRange === "1m" ? "30-Day" : timeRange === "3m" ? "3-Month" : "6-Month"} Performance Trend
                     </h3>
-                    <p className="text-xs text-[#8b7355] mt-1">Real-time dynamic trend line graph powered by live Firebase data.</p>
+                    <p className="text-xs text-[#8b7355] mt-1">Real-time dynamic trend line graph powered by live data.</p>
                   </div>
 
                   {/* Toggle Metric */}
@@ -2485,38 +2507,39 @@ export default function AdminDashboard() {
                             className="opacity-0 group-hover:opacity-100 transition-opacity"
                           />
 
-                          {/* Outer pulse ring on hover */}
-                          <circle 
-                            cx={pt.x} 
-                            cy={pt.y} 
-                            r="10" 
-                            fill={
-                              analyticsMetric === "scans" ? "#d4af37" :
-                              analyticsMetric === "orders" ? "#3b82f6" :
-                              "#10b981"
-                            } 
-                            opacity="0.3"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          />
+                          {/* Outer pulse ring & Data Point Node centered in transform group */}
+                          <g transform={`translate(${pt.x}, ${pt.y})`}>
+                            <circle 
+                              cx="0" 
+                              cy="0" 
+                              r="10" 
+                              fill={
+                                analyticsMetric === "scans" ? "#d4af37" :
+                                analyticsMetric === "orders" ? "#3b82f6" :
+                                "#10b981"
+                              } 
+                              opacity="0.3"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            />
 
-                          {/* Data Point Node */}
-                          <circle 
-                            cx={pt.x} 
-                            cy={pt.y} 
-                            r="5" 
-                            fill={
-                              analyticsMetric === "scans" ? "#2c1810" :
-                              analyticsMetric === "orders" ? "#1e40af" :
-                              "#065f46"
-                            } 
-                            stroke={
-                              analyticsMetric === "scans" ? "#d4af37" :
-                              analyticsMetric === "orders" ? "#60a5fa" :
-                              "#34d399"
-                            } 
-                            strokeWidth="2.5" 
-                            className="transition-transform duration-300 group-hover:scale-125"
-                          />
+                            <circle 
+                              cx="0" 
+                              cy="0" 
+                              r="5" 
+                              fill={
+                                analyticsMetric === "scans" ? "#2c1810" :
+                                analyticsMetric === "orders" ? "#1e40af" :
+                                "#065f46"
+                              } 
+                              stroke={
+                                analyticsMetric === "scans" ? "#d4af37" :
+                                analyticsMetric === "orders" ? "#60a5fa" :
+                                "#34d399"
+                              } 
+                              strokeWidth="2.5" 
+                              className="transition-transform duration-300 group-hover:scale-125"
+                            />
+                          </g>
 
                           {/* Value Badge Label above Point */}
                           <g transform={`translate(${pt.x}, ${pt.y - 12})`}>
@@ -2594,9 +2617,9 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <div className="relative w-full overflow-x-auto">
-                    <div className="min-w-[650px] pt-4">
+                    <div className="pt-4" style={{ minWidth: `${Math.max(650, barSvgWidth)}px` }}>
                       {/* SVG Bar Chart with Y-axis Quantity on left and X-axis Dishes on bottom */}
-                      <svg viewBox="0 0 750 280" className="w-full h-auto overflow-visible">
+                      <svg viewBox={`0 0 ${barSvgWidth} 280`} className="w-full h-auto overflow-visible">
                         <defs>
                           <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#2c1810" />
@@ -2631,7 +2654,7 @@ export default function AdminDashboard() {
                               <line
                                 x1="60"
                                 y1={y}
-                                x2="730"
+                                x2={chartEndX}
                                 y2={y}
                                 stroke="#f0e6dd"
                                 strokeDasharray="4 4"
@@ -2653,14 +2676,14 @@ export default function AdminDashboard() {
                         })}
 
                         {/* Y-Axis Baseline Line */}
-                        <line x1="60" y1="200" x2="730" y2="200" stroke="#e5d5c5" strokeWidth="2" />
+                        <line x1="60" y1="200" x2={chartEndX} y2="200" stroke="#e5d5c5" strokeWidth="2" />
                         {/* X-Axis Baseline Line */}
                         <line x1="60" y1="40" x2="60" y2="200" stroke="#e5d5c5" strokeWidth="2" />
 
                         {/* Render Vertical Bars for Dishes */}
                         {dishBarData.map((dish, idx) => {
                           const barCount = dishBarData.length;
-                          const groupWidth = (730 - 60) / barCount;
+                          const groupWidth = (chartEndX - 60) / barCount;
                           const barWidth = Math.min(38, groupWidth * 0.55);
                           const xCenter = 60 + idx * groupWidth + groupWidth / 2;
                           const xLeft = xCenter - barWidth / 2;
@@ -2735,7 +2758,7 @@ export default function AdminDashboard() {
 
                         {/* X-Axis Bottom Label (Dishes) */}
                         <text
-                          x="395"
+                          x={60 + (chartEndX - 60) / 2}
                           y="272"
                           textAnchor="middle"
                           fontSize="11"
@@ -2863,6 +2886,113 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
+
+              {/* Bottom Section: Most Selling vs Least Selling Items */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Most Selling Items Card */}
+                <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-[#e5d5c5]">
+                  <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#e5d5c5]">
+                    <div>
+                      <h3 className="text-lg font-serif font-bold text-[#2c1810] flex items-center gap-2">
+                        <Flame size={20} className="text-orange-500" />
+                        Top Most Selling Items
+                      </h3>
+                      <p className="text-xs text-[#8b7355] mt-0.5 font-medium">Highest order volume and customer favorites</p>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200">
+                      Best Sellers
+                    </span>
+                  </div>
+
+                  {mostSellingItems.length === 0 ? (
+                    <p className="text-xs text-[#8b7355]">No item sales recorded.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {mostSellingItems.map((dish, i) => (
+                        <div key={dish.id || i} className="flex items-center justify-between p-3 bg-[#fdfaf6] rounded-2xl border border-[#e5d5c5] gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
+                              #{i + 1}
+                            </span>
+                            {dish.imageUrl ? (
+                              <img 
+                                src={normalizeImageUrl(dish.imageUrl)} 
+                                alt={dish.name} 
+                                className="w-10 h-10 rounded-xl object-cover border border-[#e5d5c5] shrink-0" 
+                                referrerPolicy="no-referrer" 
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                              />
+                            ) : null}
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-[#2c1810] truncate">{dish.name}</h4>
+                              <p className="text-[10px] text-[#8b7355] font-medium">₹{dish.price} • {dish.views} Views</p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="inline-block bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-extrabold px-2.5 py-1 rounded-lg">
+                              {dish.quantityOrdered} Sold
+                            </span>
+                            <p className="text-[10px] font-mono font-bold text-[#2c1810] mt-1">₹{dish.totalRevenue.toLocaleString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Least Selling Items Card */}
+                <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-[#e5d5c5]">
+                  <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#e5d5c5]">
+                    <div>
+                      <h3 className="text-lg font-serif font-bold text-[#2c1810] flex items-center gap-2">
+                        <AlertCircle size={20} className="text-amber-500" />
+                        Least Selling / Slow Moving Items
+                      </h3>
+                      <p className="text-xs text-[#8b7355] mt-0.5 font-medium">Lowest sales volume requiring promotion or menu review</p>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200">
+                      Needs Action
+                    </span>
+                  </div>
+
+                  {leastSellingItems.length === 0 ? (
+                    <p className="text-xs text-[#8b7355]">No item data available.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {leastSellingItems.map((dish, i) => (
+                        <div key={dish.id || i} className="flex items-center justify-between p-3 bg-[#fdfaf6] rounded-2xl border border-[#e5d5c5] gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
+                              #{i + 1}
+                            </span>
+                            {dish.imageUrl ? (
+                              <img 
+                                src={normalizeImageUrl(dish.imageUrl)} 
+                                alt={dish.name} 
+                                className="w-10 h-10 rounded-xl object-cover border border-[#e5d5c5] shrink-0" 
+                                referrerPolicy="no-referrer" 
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                              />
+                            ) : null}
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-[#2c1810] truncate">{dish.name}</h4>
+                              <p className="text-[10px] text-[#8b7355] font-medium">₹{dish.price} • {dish.views} Views</p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="inline-block bg-amber-50 text-amber-800 border border-amber-200 text-xs font-extrabold px-2.5 py-1 rounded-lg">
+                              {dish.quantityOrdered} Sold
+                            </span>
+                            <p className="text-[10px] font-mono font-bold text-[#2c1810] mt-1">₹{dish.totalRevenue.toLocaleString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           );
         })()}
@@ -2887,7 +3017,7 @@ export default function AdminDashboard() {
                   className="w-full sm:w-auto bg-[#2c1810] text-[#fdfaf6] px-6 py-3 rounded-xl font-bold hover:bg-[#4a2c1d] transition-all shadow-md flex items-center justify-center gap-2 text-xs"
                 >
                   <Save size={16} />
-                  Save Profile to Firebase
+                  Save Profile
                 </button>
               </div>
 
@@ -3090,7 +3220,7 @@ export default function AdminDashboard() {
                     className="w-full sm:w-auto bg-[#2c1810] text-[#fdfaf6] px-8 py-3.5 rounded-xl font-bold hover:bg-[#4a2c1d] transition-all shadow-lg flex items-center justify-center gap-2 text-sm"
                   >
                     <Save size={18} />
-                    Save Profile & Billing Settings to Firebase
+                    Save Profile & Billing Settings
                   </button>
                 </div>
               </form>
@@ -3107,7 +3237,7 @@ export default function AdminDashboard() {
                     Dynamic Menu Tag Customization
                   </h3>
                   <p className="text-xs text-[#8b7355] mt-1">
-                    Add, edit, or delete custom menu tags with user-selected colors. Changes sync to Firebase in real-time.
+                    Add, edit, or delete custom menu tags with user-selected colors. Changes sync in real-time.
                   </p>
                 </div>
                 <div className="w-full sm:w-auto">
@@ -3272,7 +3402,7 @@ export default function AdminDashboard() {
                     className="w-full sm:w-auto bg-[#2c1810] text-[#fdfaf6] px-8 py-3.5 rounded-xl font-bold hover:bg-[#4a2c1d] transition-all shadow-lg flex items-center justify-center gap-2 text-sm"
                   >
                     <Save size={18} />
-                    Save All Settings to Firebase
+                    Save All Settings
                   </button>
                 </div>
               </form>

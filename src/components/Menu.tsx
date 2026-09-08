@@ -137,14 +137,24 @@ export default function Menu() {
       handleFirestoreError(error, OperationType.LIST, "tables");
     });
 
-    // Track scan
+    // Track scan once per browser session per table to avoid duplicate counts on page refresh
     const trackScan = async () => {
+      const targetTable = tableParam || "1";
+      const sessionKey = `foqr_scan_tracked_${targetTable}`;
+      
+      // Skip if already tracked during this browser session
+      if (sessionStorage.getItem(sessionKey)) {
+        return;
+      }
+
       try {
         await addDoc(collection(db, "scans"), {
-          qrId: tableParam,
+          tableNumber: targetTable,
+          qrId: targetTable,
           timestamp: serverTimestamp(),
           userAgent: navigator.userAgent
         });
+        sessionStorage.setItem(sessionKey, "true");
       } catch (e) {
         console.error("Scan tracking failed", e);
       }
