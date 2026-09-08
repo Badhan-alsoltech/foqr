@@ -105,10 +105,6 @@ export default function Menu() {
     const unsubscribeCats = onSnapshot(catQuery, (snapshot) => {
       const cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
       setCategories(cats);
-      if (cats.length === 0 && !isSeedingTriggered) {
-        isSeedingTriggered = true;
-        seedDummyData().catch(err => console.error("Auto seeding failed:", err));
-      }
       setLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, "categories");
@@ -194,7 +190,7 @@ export default function Menu() {
   const targetTableClean = (tableName || displayTableName || tableNumber || tableParam || "").toString().toLowerCase().replace("table", "").trim();
 
   const activeTableOrder = activeOrders.find(o => {
-    if (o.status !== "pending" && o.status !== "approved") return false;
+    if (o.status !== "approved") return false;
     const orderTableClean = (o.tableNumber || "").toString().toLowerCase().replace("table", "").trim();
     return orderTableClean === targetTableClean || o.tableNumber === tableName || o.tableNumber === displayTableName;
   });
