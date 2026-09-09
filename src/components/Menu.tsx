@@ -204,12 +204,14 @@ export default function Menu() {
     const matchesVeg = vegOnlyFilter ? item.isVegetarian : true;
     const matchesNonVeg = nonVegOnlyFilter ? !item.isVegetarian : true;
     const matchesSpicy = spicyFilter ? item.isSpicy : true;
-    return matchesCategory && matchesSearch && matchesVeg && matchesNonVeg && matchesSpicy && item.isAvailable;
+    const isAvailable = item.isAvailable !== false;
+    return matchesCategory && matchesSearch && matchesVeg && matchesNonVeg && matchesSpicy && isAvailable;
   });
 
-  const categoriesToDisplay = selectedCategory
+  const categoriesToDisplay = (selectedCategory
     ? categories.filter(c => c.id === selectedCategory)
-    : categories;
+    : categories
+  ).filter(cat => menuItems.some(item => item.categoryId === cat.id && item.isAvailable !== false));
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + (vegOnlyFilter ? 1 : 0) + (nonVegOnlyFilter ? 1 : 0) + (spicyFilter ? 1 : 0);
 

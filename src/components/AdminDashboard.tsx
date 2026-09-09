@@ -326,13 +326,17 @@ export default function AdminDashboard() {
     const formData = new FormData(e.currentTarget);
     const selectedTags = formData.getAll("tags") as string[];
 
+    const isAvailableVal = formData.get("isAvailable") !== null 
+      ? (formData.get("isAvailable") === "on") 
+      : (isEditingItem?.isAvailable ?? true);
+
     const itemData = {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
       price: parseFloat(formData.get("price") as string),
       categoryId: formData.get("categoryId") as string,
       imageUrl: normalizeImageUrl(formData.get("imageUrl") as string),
-      isAvailable: true,
+      isAvailable: isAvailableVal,
       isSpicy: selectedTags.includes("tag_1") || formData.get("isSpicy") === "on",
       isVegetarian: selectedTags.includes("tag_2") || formData.get("isVegetarian") === "on",
       tags: selectedTags,
@@ -352,6 +356,16 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, "menuItems");
+    }
+  };
+
+  const handleToggleAvailability = async (item: MenuItem) => {
+    try {
+      const currentStatus = item.isAvailable !== false;
+      const newStatus = !currentStatus;
+      await updateDoc(doc(db, "menuItems", item.id), { isAvailable: newStatus });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, "menuItems");
     }
   };
 
@@ -1263,10 +1277,20 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 text-sm font-bold text-[#2c1810]">Rs {item.price.toFixed(2)}</td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className={cn("w-2 h-2 rounded-full", item.isAvailable ? "bg-green-500" : "bg-red-500")} />
-                              <span className="text-xs text-[#5c4033]">{item.isAvailable ? "Available" : "Sold Out"}</span>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAvailability(item)}
+                              className={cn(
+                                "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer select-none shadow-xs",
+                                (item.isAvailable !== false)
+                                  ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                                  : "bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100"
+                              )}
+                              title={(item.isAvailable !== false) ? "Click to set as Inactive (Hide from Menu)" : "Click to set as Active (Show in Menu)"}
+                            >
+                              <span className={cn("w-2.5 h-2.5 rounded-full", (item.isAvailable !== false) ? "bg-emerald-500 animate-pulse" : "bg-rose-500")} />
+                              <span>{(item.isAvailable !== false) ? "Active" : "Inactive"}</span>
+                            </button>
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex justify-end gap-2">
@@ -3492,6 +3516,26 @@ export default function AdminDashboard() {
                     className="w-full bg-white border border-[#e5d5c5] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20" 
                     placeholder="https://..." 
                   />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-[#e5d5c5]">
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-widest text-[#2c1810] block cursor-pointer">
+                      Item Availability Status
+                    </label>
+                    <p className="text-[11px] text-[#8b7355]">
+                      When set to Active, customers can view and order this item. When set to Inactive, it is hidden from the customer menu.
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input 
+                      type="checkbox" 
+                      name="isAvailable" 
+                      defaultChecked={isEditingItem ? isEditingItem.isAvailable !== false : true}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
                 </div>
 
                 <div className="space-y-2 pt-2">
