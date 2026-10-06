@@ -81,6 +81,38 @@ service cloud.firestore {
     // Rules
     // ===============================================================
 
+    match /restaurants/{restaurantId} {
+      allow read, write: if true;
+
+      match /{subcollection}/{docId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /superadmin/{docId} {
+      allow read, write: if true;
+    }
+
+    match /{path=**}/orderRequests/{orderId} {
+      allow read, write: if true;
+    }
+
+    match /{path=**}/menuItems/{itemId} {
+      allow read, write: if true;
+    }
+
+    match /{path=**}/categories/{categoryId} {
+      allow read, write: if true;
+    }
+
+    match /{path=**}/tables/{tableId} {
+      allow read, write: if true;
+    }
+
+    match /{path=**}/scans/{scanId} {
+      allow read, write: if true;
+    }
+
     match /categories/{categoryId} {
       allow read, write: if true;
     }
@@ -114,6 +146,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /admin/{credId} {
       allow read, write: if true;
     }
 

@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { seedDummyData, db, handleFirestoreError, OperationType } from "../firebase";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { 
+  seedDummyData, db, handleFirestoreError, OperationType, 
+  fetchRestaurantBySlug, getAllRestaurants, getRestaurantCol, getRestaurantDoc, RestaurantProfile 
+} from "../firebase";
 import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, ShoppingBag, Menu as MenuIcon, X, Shield, Plus, Minus, Trash2, CheckCircle2, Phone, User as UserIcon, ChevronRight, Sparkles, Flame, Eye, LayoutList, LayoutGrid, Filter, RotateCcw, AlertCircle } from "lucide-react";
 import { cn, normalizeImageUrl } from "../lib/utils";
+import ServerDownScreen from "./ServerDownScreen";
 
 interface Category {
   id: string;
@@ -56,8 +60,11 @@ function FoodTypeBadge({ isVegetarian }: { isVegetarian: boolean }) {
 }
 
 export default function Menu() {
-  const { tableId } = useParams<{ tableId: string }>();
+  const { restaurantSlug, tableId } = useParams<{ restaurantSlug?: string; tableId?: string }>();
   const navigate = useNavigate();
+  const [restaurant, setRestaurant] = useState<RestaurantProfile | null>(null);
+  const [restaurantNotFound, setRestaurantNotFound] = useState(false);
+
   const hasTableSelected = Boolean(tableId);
   const tableParam = tableId || null;
 
@@ -91,17 +98,41 @@ export default function Menu() {
 
   const [settings, setSettings] = useState({
     spicyLabel: "Spicy",
-    vegetarianLabel: "Vegetarian"
+    vegetarianLabel: "Vegetarian",
+    restaurantName: "Spice & Silk",
+    restaurantSubtitle: "FINE DINING & MULTI CUISINE",
+    logoUrl: "",
+    coverUrl: "",
   });
+
+  // Resolve restaurant by slug or fallback to default
+  useEffect(() => {
+    async function loadRestaurant() {
+      if (restaurantSlug) {
+        const found = await fetchRestaurantBySlug(restaurantSlug);
+        if (found) {
+          setRestaurant(found);
+        } else {
+          setRestaurantNotFound(true);
+        }
+      } else {
+        const list = await getAllRestaurants();
+        if (list.length > 0) {
+          setRestaurant(list[0]);
+        }
+      }
+    }
+    loadRestaurant();
+  }, [restaurantSlug]);
+
+  const targetRestaurantId = restaurant?.id || null;
 
   useEffect(() => {
     const loadingTimeout = setTimeout(() => {
       setLoading(false);
     }, 2000);
 
-    let isSeedingTriggered = false;
-
-    const catQuery = query(collection(db, "categories"), orderBy("order", "asc"));
+    const catQuery = query(getRestaurantCol(targetRestaurantId, "categories"), orderBy("order", "asc"));
     const unsubscribeCats = onSnapshot(catQuery, (snapshot) => {
       const cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
       setCategories(cats);
@@ -111,7 +142,7 @@ export default function Menu() {
       setLoading(false);
     });
 
-    const itemQuery = query(collection(db, "menuItems"));
+    const itemQuery = query(getRestaurantCol(targetRestaurantId, "menuItems"));
     const unsubscribeItems = onSnapshot(itemQuery, (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
       setMenuItems(items);
@@ -121,7 +152,7 @@ export default function Menu() {
       setLoading(false);
     });
 
-    const tableQuery = query(collection(db, "tables"));
+    const tableQuery = query(getRestaurantCol(targetRestaurantId, "tables"));
     const unsubscribeTables = onSnapshot(tableQuery, (snapshot) => {
       const fetchedTables = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Table));
       setTables(fetchedTables);
@@ -136,7 +167,7 @@ export default function Menu() {
     // Track scan once per browser session per table to avoid duplicate counts on page refresh
     const trackScan = async () => {
       const targetTable = tableParam || "1";
-      const sessionKey = `foqr_scan_tracked_${targetTable}`;
+      const sessionKey = `foqr_scan_${targetRestaurantId || 'root'}_${targetTable}`;
       
       // Skip if already tracked during this browser session
       if (sessionStorage.getItem(sessionKey)) {
@@ -144,7 +175,7 @@ export default function Menu() {
       }
 
       try {
-        await addDoc(collection(db, "scans"), {
+        await addDoc(getRestaurantCol(targetRestaurantId, "scans"), {
           tableNumber: targetTable,
           qrId: targetTable,
           timestamp: serverTimestamp(),
@@ -157,13 +188,21 @@ export default function Menu() {
     };
     trackScan();
 
-    const unsubscribeSettings = onSnapshot(doc(db, "settings", "general"), (snapshot) => {
+    const unsubscribeSettings = onSnapshot(getRestaurantDoc(targetRestaurantId, "settings", "general"), (snapshot) => {
       if (snapshot.exists()) {
-        setSettings(snapshot.data() as any);
+        const data = snapshot.data();
+        setSettings(prev => ({
+          ...prev,
+          ...data,
+          restaurantName: data.restaurantName || restaurant?.name || prev.restaurantName,
+          restaurantSubtitle: data.restaurantSubtitle || restaurant?.subtitle || prev.restaurantSubtitle,
+          logoUrl: data.logoUrl || restaurant?.logoUrl || prev.logoUrl,
+          coverUrl: data.coverUrl || restaurant?.coverUrl || prev.coverUrl,
+        }));
       }
     });
 
-    const ordersQuery = query(collection(db, "orderRequests"));
+    const ordersQuery = query(getRestaurantCol(targetRestaurantId, "orderRequests"));
     const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
       const fetchedOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setActiveOrders(fetchedOrders);
@@ -179,7 +218,7 @@ export default function Menu() {
       unsubscribeSettings();
       unsubscribeOrders();
     };
-  }, [tableParam]);
+  }, [tableParam, targetRestaurantId, restaurant]);
 
   const displayTableName = hasTableSelected
     ? (tableName || 
@@ -223,10 +262,10 @@ export default function Menu() {
     setSearchQuery("");
   };
 
-  const handleViewDetails = async (item: MenuItem) => {
+    const handleViewDetails = async (item: MenuItem) => {
     setViewingItem(item);
     try {
-      const itemRef = doc(db, "menuItems", item.id);
+      const itemRef = getRestaurantDoc(targetRestaurantId, "menuItems", item.id);
       await updateDoc(itemRef, {
         views: increment(1)
       });
@@ -274,6 +313,10 @@ export default function Menu() {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (restaurant && !restaurant.isActive) {
+      alert("This restaurant is currently closed for online table orders.");
+      return;
+    }
     if (!hasTableSelected) {
       alert("No table selected! Ordering is disabled. Please scan your Table QR Code to place an order.");
       return;
@@ -294,7 +337,7 @@ export default function Menu() {
 
     setIsSubmittingOrder(true);
     try {
-      await addDoc(collection(db, "orderRequests"), {
+      await addDoc(getRestaurantCol(targetRestaurantId, "orderRequests"), {
         customerName: customerName.trim(),
         customerPhone: `+91 ${customerPhone}`,
         tableNumber: displayTableName,
@@ -319,6 +362,17 @@ export default function Menu() {
     }
   };
 
+  if (restaurantNotFound) {
+    return (
+      <ServerDownScreen
+        restaurantSlug={restaurantSlug || "restaurant"}
+        restaurantName={restaurantSlug ? restaurantSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Restaurant"}
+        errorCode="503 RESTAURANT SERVER UNREACHABLE"
+        customMessage={`The live menu server for "${restaurantSlug}" is currently offline or unreachable. Tables cannot place live cloud orders until connectivity is restored.`}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#140c0a] flex items-center justify-center text-white">
@@ -330,10 +384,40 @@ export default function Menu() {
     );
   }
 
+  if (restaurant && !restaurant.isActive) {
+    return (
+      <ServerDownScreen
+        restaurantSlug={restaurant.slug || restaurantSlug || "restaurant"}
+        restaurantName={restaurant.name || (restaurantSlug ? restaurantSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Restaurant")}
+        errorCode="RESTAURANT TEMPORARILY OFFLINE"
+        title={
+          <>
+            Restaurant<br />
+            <span className="italic font-normal text-stone-700">Temporarily</span><br />
+            Offline.
+          </>
+        }
+        customMessage="This restaurant is currently closed for online table orders. Please contact restaurant staff."
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-[#f7f2eb] text-[#2c1810] font-sans flex flex-col justify-between overflow-x-hidden">
       {/* Full-Width Hero Header */}
       <div className="relative w-full bg-gradient-to-b from-[#140c0a] via-[#221612] to-[#140c0a] text-[#fdfaf6] pt-12 pb-16 px-4 sm:px-8 shadow-2xl border-b border-[#d4af37]/30 overflow-hidden">
+        {/* Background Restaurant Photo (if provided) */}
+        {(restaurant?.coverUrl || settings.coverUrl) && (
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={normalizeImageUrl(restaurant?.coverUrl || settings.coverUrl)} 
+              alt="Restaurant Ambience" 
+              className="w-full h-full object-cover opacity-25 filter blur-[1px] scale-105"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#140c0a]/85 via-[#221612]/90 to-[#140c0a]" />
+          </div>
+        )}
         <div className="absolute top-[-40%] left-[50%] -translate-x-1/2 w-[1000px] h-[600px] bg-[#d4af37]/15 rounded-full blur-[140px] pointer-events-none" />
         
         <div className="relative w-full text-center space-y-3 z-10">
@@ -349,18 +433,28 @@ export default function Menu() {
               <img 
                 src={normalizeImageUrl((settings as any).logoUrl)} 
                 alt="Restaurant Logo" 
-                className="h-14 sm:h-18 max-w-[200px] object-contain drop-shadow-lg rounded-lg"
+                className="h-14 sm:h-18 max-w-[200px] object-contain drop-shadow-lg rounded-lg" 
                 referrerPolicy="no-referrer"
               />
             )}
             <h1 className="font-serif font-extrabold text-4xl sm:text-6xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fdfaf6] to-[#d4af37]">
-              {(settings as any).restaurantName || "foQR"}
+              {restaurant?.name || (settings as any).restaurantName || "foQR"}
             </h1>
           </div>
 
           <p className="text-xs sm:text-sm text-[#bcaaa0] max-w-xl mx-auto font-light leading-relaxed">
-            {(settings as any).restaurantSubtitle || "Handcrafted dishes, authentic flavors & culinary excellence at your fingertips."}
+            {restaurant?.subtitle || (settings as any).restaurantSubtitle || "Handcrafted dishes, authentic flavors & culinary excellence at your fingertips."}
           </p>
+
+          {restaurant && !restaurant.isActive && (
+            <div className="bg-red-950/80 border-2 border-red-500/60 text-red-200 p-4 rounded-2xl backdrop-blur-md flex items-center gap-3 text-xs sm:text-sm font-medium shadow-xl max-w-xl mx-auto mt-4 text-left">
+              <AlertCircle className="text-red-400 shrink-0" size={24} />
+              <div>
+                <p className="font-extrabold text-red-300 text-sm">Restaurant Temporarily Offline</p>
+                <p className="text-[11px] text-red-200/90 leading-tight">This restaurant is currently closed for online table orders. Please contact restaurant staff.</p>
+              </div>
+            </div>
+          )}
 
           {!hasTableSelected ? (
             <div className="bg-amber-500/20 border-2 border-amber-500/60 text-amber-200 p-4 rounded-2xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-medium shadow-xl max-w-xl mx-auto mt-4 text-left">

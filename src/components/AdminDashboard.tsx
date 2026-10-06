@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { db, handleFirestoreError, OperationType, getAdminSession, logoutAdmin } from "../firebase";
+import { 
+  db, handleFirestoreError, OperationType, getAdminSession, logoutAdmin, 
+  getSuperAdminSession, getRestaurantCol, getRestaurantDoc, fetchRestaurantBySlug, 
+  fetchRestaurantById, getAllRestaurants, updateRestaurantProfile, RestaurantProfile 
+} from "../firebase";
 import { collection, onSnapshot, query, orderBy, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { User } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   LayoutDashboard, Utensils, QrCode, BarChart3, Settings, LogOut, 
@@ -134,6 +138,7 @@ export default function AdminDashboard() {
     restaurantName: string;
     restaurantSubtitle: string;
     logoUrl: string;
+    coverUrl: string;
     address: string;
     phone: string;
     email: string;
@@ -149,6 +154,7 @@ export default function AdminDashboard() {
     restaurantName: "foQR Restaurant",
     restaurantSubtitle: "FINE DINING & MULTI CUISINE",
     logoUrl: "",
+    coverUrl: "",
     address: "Plot 42, Food Court, Cyber Hub, Sector 29, Gurugram",
     phone: "+91 98765 43210",
     email: "contact@foqr.com",
@@ -193,7 +199,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Form states
+  const { restaurantSlug } = useParams<{ restaurantSlug?: string }>();
+  const [currentRestaurant, setCurrentRestaurant] = useState<RestaurantProfile | null>(null);
+  const [allRestaurants, setAllRestaurants] = useState<RestaurantProfile[]>([]);
+  const isSuperAdmin = Boolean(getSuperAdminSession());
+
   const [isEditingItem, setIsEditingItem] = useState<MenuItem | null>(null);
   const [isEditingCategory, setIsEditingCategory] = useState<Category | null>(null);
   const [isEditingTable, setIsEditingTable] = useState<Table | null>(null);
@@ -216,25 +226,63 @@ export default function AdminDashboard() {
     }
   }, [isEditingItem, isAddingItem]);
 
+  // Auth and restaurant profile resolution
+  useEffect(() => {
+    const session = getAdminSession();
+    const superSession = getSuperAdminSession();
+    if (!session && !superSession) {
+      if (restaurantSlug) {
+        navigate(`/r/${restaurantSlug}/login`);
+      } else {
+        navigate("/login");
+      }
+      return;
+    }
+
+    if (session) {
+      setUser({ uid: "admin", email: "admin@hotel.com", displayName: session.userId } as any);
+    } else if (superSession) {
+      setUser({ uid: "superadmin", email: "superadmin@foqr.com", displayName: superSession.userId } as any);
+    }
+
+    async function resolveRestaurant() {
+      if (restaurantSlug) {
+        const r = await fetchRestaurantBySlug(restaurantSlug);
+        if (r) setCurrentRestaurant(r);
+      } else if (session?.restaurantId) {
+        const r = await fetchRestaurantById(session.restaurantId);
+        if (r) setCurrentRestaurant(r);
+      } else if (session?.restaurantSlug) {
+        const r = await fetchRestaurantBySlug(session.restaurantSlug);
+        if (r) setCurrentRestaurant(r);
+      }
+
+      if (isSuperAdmin) {
+        const list = await getAllRestaurants();
+        setAllRestaurants(list);
+        if (!restaurantSlug && list.length > 0 && !currentRestaurant) {
+          setCurrentRestaurant(list[0]);
+        }
+      }
+    }
+    resolveRestaurant();
+  }, [restaurantSlug, navigate, isSuperAdmin]);
+
+  const targetRestaurantId = currentRestaurant?.id || null;
+  const targetRestaurantSlug = currentRestaurant?.slug || restaurantSlug || "";
+
   useEffect(() => {
     // Safety fallback timer to ensure screen never gets stuck loading forever
     const loadingTimeout = setTimeout(() => {
       setLoading(false);
     }, 2000);
 
-    const session = getAdminSession();
-    if (!session) {
-      navigate("/login");
-    } else {
-      setUser({ uid: "admin", email: "admin@hotel.com", displayName: session.userId } as any);
-    }
-
-    const catQuery = query(collection(db, "categories"), orderBy("order", "asc"));
+    const catQuery = query(getRestaurantCol(targetRestaurantId, "categories"), orderBy("order", "asc"));
     const unsubscribeCats = onSnapshot(catQuery, (snapshot) => {
       setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category)));
     }, (error) => handleFirestoreError(error, OperationType.LIST, "categories"));
 
-    const itemQuery = query(collection(db, "menuItems"));
+    const itemQuery = query(getRestaurantCol(targetRestaurantId, "menuItems"));
     const unsubscribeItems = onSnapshot(itemQuery, (snapshot) => {
       setMenuItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem)));
       setLoading(false);
@@ -243,37 +291,38 @@ export default function AdminDashboard() {
       setLoading(false);
     });
 
-    const scanQuery = query(collection(db, "scans"), orderBy("timestamp", "desc"));
+    const scanQuery = query(getRestaurantCol(targetRestaurantId, "scans"), orderBy("timestamp", "desc"));
     const unsubscribeScans = onSnapshot(scanQuery, (snapshot) => {
       setScans(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Scan)));
     }, (error) => handleFirestoreError(error, OperationType.LIST, "scans"));
 
-    const tableQuery = query(collection(db, "tables"));
+    const tableQuery = query(getRestaurantCol(targetRestaurantId, "tables"));
     const unsubscribeTables = onSnapshot(tableQuery, (snapshot) => {
       setTables(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Table)));
     }, (error) => handleFirestoreError(error, OperationType.LIST, "tables"));
 
-    const orderQuery = query(collection(db, "orderRequests"), orderBy("createdAt", "desc"));
+    const orderQuery = query(getRestaurantCol(targetRestaurantId, "orderRequests"), orderBy("createdAt", "desc"));
     const unsubscribeOrders = onSnapshot(orderQuery, (snapshot) => {
       setOrderRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as OrderRequest)));
     }, (error) => handleFirestoreError(error, OperationType.LIST, "orderRequests"));
 
-    const unsubscribeSettings = onSnapshot(doc(db, "settings", "general"), (snapshot) => {
+    const unsubscribeSettings = onSnapshot(getRestaurantDoc(targetRestaurantId, "settings", "general"), (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
         setSettings({
           spicyLabel: data.spicyLabel || "Spicy Dish",
           vegetarianLabel: data.vegetarianLabel || "Vegetarian",
           customTags: Array.isArray(data.customTags) ? data.customTags : DEFAULT_CUSTOM_TAGS,
-          restaurantName: data.restaurantName || "foQR Restaurant",
-          restaurantSubtitle: data.restaurantSubtitle || "FINE DINING & MULTI CUISINE",
-          logoUrl: data.logoUrl || "",
-          address: data.address || "Plot 42, Food Court, Cyber Hub, Sector 29, Gurugram",
-          phone: data.phone || "+91 98765 43210",
-          email: data.email || "contact@foqr.com",
-          gstin: data.gstin || "07AAAAA0000A1Z5",
-          fssai: data.fssai || "10021011000432",
-          taxRate: data.taxRate !== undefined ? Number(data.taxRate) : 5,
+          restaurantName: data.restaurantName || currentRestaurant?.name || "foQR Restaurant",
+          restaurantSubtitle: data.restaurantSubtitle || currentRestaurant?.subtitle || "FINE DINING & MULTI CUISINE",
+          logoUrl: data.logoUrl || currentRestaurant?.logoUrl || "",
+          coverUrl: data.coverUrl || currentRestaurant?.coverUrl || "",
+          address: data.address || currentRestaurant?.address || "Plot 42, Food Court, Cyber Hub, Sector 29, Gurugram",
+          phone: data.phone || currentRestaurant?.phone || "+91 98765 43210",
+          email: data.email || currentRestaurant?.email || "contact@foqr.com",
+          gstin: data.gstin || currentRestaurant?.gstin || "07AAAAA0000A1Z5",
+          fssai: data.fssai || currentRestaurant?.fssai || "10021011000432",
+          taxRate: data.taxRate !== undefined ? Number(data.taxRate) : (currentRestaurant?.taxRate ?? 5),
           serviceChargeRate: data.serviceChargeRate !== undefined ? Number(data.serviceChargeRate) : 0,
           billFooter: data.billFooter || "THANK YOU FOR DINING WITH US",
         });
@@ -289,11 +338,11 @@ export default function AdminDashboard() {
       unsubscribeOrders();
       unsubscribeSettings();
     };
-  }, [navigate]);
+  }, [targetRestaurantId, currentRestaurant]);
 
   const handleApproveOrder = async (orderId: string) => {
     try {
-      await updateDoc(doc(db, "orderRequests", orderId), { status: "approved" });
+      await updateDoc(getRestaurantDoc(targetRestaurantId, "orderRequests", orderId), { status: "approved" });
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, "orderRequests");
     }
@@ -301,7 +350,7 @@ export default function AdminDashboard() {
 
   const handleCompleteOrder = async (orderId: string) => {
     try {
-      await updateDoc(doc(db, "orderRequests", orderId), { status: "completed" });
+      await updateDoc(getRestaurantDoc(targetRestaurantId, "orderRequests", orderId), { status: "completed" });
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, "orderRequests");
     }
@@ -310,7 +359,7 @@ export default function AdminDashboard() {
   const handleRejectOrder = async (orderId: string) => {
     if (!confirm("Are you sure you want to reject this order request?")) return;
     try {
-      await updateDoc(doc(db, "orderRequests", orderId), { status: "rejected" });
+      await updateDoc(getRestaurantDoc(targetRestaurantId, "orderRequests", orderId), { status: "rejected" });
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, "orderRequests");
     }
@@ -318,7 +367,13 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     logoutAdmin();
-    navigate("/login");
+    if (isSuperAdmin) {
+      navigate("/super-admin");
+    } else if (restaurantSlug) {
+      navigate(`/r/${restaurantSlug}/login`);
+    } else {
+      navigate("/login");
+    }
   };
 
   const handleAddItem = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -345,10 +400,10 @@ export default function AdminDashboard() {
 
     try {
       if (isEditingItem) {
-        await updateDoc(doc(db, "menuItems", isEditingItem.id), itemData);
+        await updateDoc(getRestaurantDoc(targetRestaurantId, "menuItems", isEditingItem.id), itemData);
         setIsEditingItem(null);
       } else {
-        await addDoc(collection(db, "menuItems"), {
+        await addDoc(getRestaurantCol(targetRestaurantId, "menuItems"), {
           ...itemData,
           createdAt: serverTimestamp(),
         });
@@ -363,7 +418,7 @@ export default function AdminDashboard() {
     try {
       const currentStatus = item.isAvailable !== false;
       const newStatus = !currentStatus;
-      await updateDoc(doc(db, "menuItems", item.id), { isAvailable: newStatus });
+      await updateDoc(getRestaurantDoc(targetRestaurantId, "menuItems", item.id), { isAvailable: newStatus });
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, "menuItems");
     }
@@ -379,10 +434,10 @@ export default function AdminDashboard() {
 
     try {
       if (isEditingCategory) {
-        await updateDoc(doc(db, "categories", isEditingCategory.id), categoryData);
+        await updateDoc(getRestaurantDoc(targetRestaurantId, "categories", isEditingCategory.id), categoryData);
         setIsEditingCategory(null);
       } else {
-        await addDoc(collection(db, "categories"), categoryData);
+        await addDoc(getRestaurantCol(targetRestaurantId, "categories"), categoryData);
         setIsAddingCategory(false);
       }
     } catch (error) {
@@ -398,7 +453,7 @@ export default function AdminDashboard() {
     }
     if (!confirm("Are you sure you want to delete this category?")) return;
     try {
-      await deleteDoc(doc(db, "categories", id));
+      await deleteDoc(getRestaurantDoc(targetRestaurantId, "categories", id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, "categories");
     }
@@ -430,10 +485,10 @@ export default function AdminDashboard() {
 
     try {
       if (isEditingTable) {
-        await updateDoc(doc(db, "tables", isEditingTable.id), tableData);
+        await updateDoc(getRestaurantDoc(targetRestaurantId, "tables", isEditingTable.id), tableData);
         setIsEditingTable(null);
       } else {
-        await addDoc(collection(db, "tables"), {
+        await addDoc(getRestaurantCol(targetRestaurantId, "tables"), {
           ...tableData,
           createdAt: serverTimestamp(),
         });
@@ -448,7 +503,7 @@ export default function AdminDashboard() {
   const handleDeleteTable = async (id: string) => {
     if (!confirm("Are you sure you want to delete this table?")) return;
     try {
-      await deleteDoc(doc(db, "tables", id));
+      await deleteDoc(getRestaurantDoc(targetRestaurantId, "tables", id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, "tables");
     }
@@ -465,7 +520,7 @@ export default function AdminDashboard() {
         { name: "Table 6", tableNumber: "6", location: "VIP Area" },
       ];
       for (const t of defaultTables) {
-        await addDoc(collection(db, "tables"), {
+        await addDoc(getRestaurantCol(targetRestaurantId, "tables"), {
           ...t,
           createdAt: serverTimestamp(),
         });
@@ -853,7 +908,7 @@ export default function AdminDashboard() {
   const handleDeleteItem = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
     try {
-      await deleteDoc(doc(db, "menuItems", id));
+      await deleteDoc(getRestaurantDoc(targetRestaurantId, "menuItems", id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, "menuItems");
     }
@@ -862,7 +917,24 @@ export default function AdminDashboard() {
   const handleUpdateSettings = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await setDoc(doc(db, "settings", "general"), settings);
+      await setDoc(getRestaurantDoc(targetRestaurantId, "settings", "general"), settings, { merge: true });
+      if (targetRestaurantId) {
+        await updateRestaurantProfile(targetRestaurantId, {
+          name: settings.restaurantName,
+          subtitle: settings.restaurantSubtitle,
+          logoUrl: settings.logoUrl,
+          coverUrl: settings.coverUrl,
+          phone: settings.phone,
+          email: settings.email,
+          address: settings.address,
+          gstin: settings.gstin,
+          fssai: settings.fssai,
+          taxRate: settings.taxRate,
+          serviceChargeRate: settings.serviceChargeRate,
+          billFooter: settings.billFooter,
+          customTags: settings.customTags
+        });
+      }
       alert("Settings and Menu Customization Tags saved successfully!");
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, "settings");
@@ -872,7 +944,50 @@ export default function AdminDashboard() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#fdfaf6]">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#fdfaf6] flex flex-col md:flex-row relative">
+    <div className="min-h-screen bg-[#fdfaf6] flex flex-col relative">
+      {/* Super Admin Top Management Bar */}
+      {isSuperAdmin && (
+        <div className="bg-[#18110e] text-[#d4af37] border-b border-[#d4af37]/30 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs z-40 sticky top-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <span className="font-bold bg-[#d4af37]/20 border border-[#d4af37]/40 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider text-[#e5c185]">
+              ⚡ Super Admin Central Mode
+            </span>
+            <span className="text-[#a89078]">
+              Active: <strong className="text-white">{currentRestaurant?.name || settings.restaurantName}</strong>
+            </span>
+            {allRestaurants.length > 1 && (
+              <div className="flex items-center gap-1.5 ml-2">
+                <span className="text-[11px] text-[#8c7355]">Switch:</span>
+                <select
+                  value={currentRestaurant?.slug || ""}
+                  onChange={(e) => {
+                    const found = allRestaurants.find(r => r.slug === e.target.value);
+                    if (found) {
+                      navigate(`/r/${found.slug}/admin`);
+                    }
+                  }}
+                  className="bg-[#241a15] border border-[#3d2b22] text-[#f7f2eb] px-2.5 py-1 rounded-lg text-xs focus:outline-none focus:border-[#d4af37]"
+                >
+                  {allRestaurants.map(r => (
+                    <option key={r.id} value={r.slug}>{r.name} (/{r.slug})</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              to="/super-admin"
+              className="bg-[#d4af37] text-[#160f0c] font-bold px-3 py-1.5 rounded-lg text-xs hover:brightness-110 flex items-center gap-1.5 transition-all shadow-sm"
+            >
+              ⬅ Return to Super Admin Console
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 flex flex-col md:flex-row relative">
       {/* Mobile Top Header Bar */}
       <div className="md:hidden bg-[#2c1810] text-[#fdfaf6] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-md">
         <div className="flex items-center gap-3">
@@ -884,13 +999,15 @@ export default function AdminDashboard() {
             {isMobileSidebarOpen ? <X size={20} /> : <MenuIcon size={20} />}
           </button>
           <div>
-            <h1 className="text-xl font-serif font-bold text-[#d4af37] leading-none">foQR</h1>
+            <h1 className="text-xl font-serif font-bold text-[#d4af37] leading-none">
+              {currentRestaurant?.name ? currentRestaurant.name.slice(0, 14) : "foQR"}
+            </h1>
             <p className="text-[9px] uppercase tracking-widest text-[#8b7355]">Admin Panel</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button 
-            onClick={() => navigate("/")}
+            onClick={() => navigate(targetRestaurantSlug ? `/r/${targetRestaurantSlug}` : "/")}
             className="px-3 py-1.5 bg-[#d4af37] text-[#2c1810] rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
           >
             <MousePointer2 size={14} />
@@ -997,7 +1114,7 @@ export default function AdminDashboard() {
           </div>
           <div className="hidden sm:flex gap-4">
             <button 
-              onClick={() => navigate("/")}
+              onClick={() => navigate(targetRestaurantSlug ? `/r/${targetRestaurantSlug}` : "/")}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e5d5c5] rounded-xl text-[#2c1810] hover:shadow-md transition-all text-sm font-medium"
             >
               <MousePointer2 size={18} />
@@ -1988,7 +2105,7 @@ export default function AdminDashboard() {
                       <div className="p-4 bg-white border-2 border-[#2c1810] rounded-2xl shadow-inner">
                         <QRCodeSVG 
                           id={`qr-table-${table.id}`}
-                          value={`${window.location.origin}/${table.tableNumber || table.id}`} 
+                          value={targetRestaurantSlug ? `${window.location.origin}/r/${targetRestaurantSlug}/${table.tableNumber || table.id}` : `${window.location.origin}/${table.tableNumber || table.id}`} 
                           size={160}
                           fgColor="#1b365d"
                         />
@@ -2011,7 +2128,7 @@ export default function AdminDashboard() {
                         Download QR
                       </button>
                       <button 
-                        onClick={() => navigate(`/admin/table-history/${table.id}`)}
+                        onClick={() => navigate(targetRestaurantSlug ? `/r/${targetRestaurantSlug}/admin/table-history/${table.id}` : `/admin/table-history/${table.id}`)}
                         className="flex-1 bg-[#fdfaf6] border border-[#e5d5c5] text-[#2c1810] py-2.5 rounded-xl text-sm font-medium hover:bg-[#d4af37]/10 transition-all shadow-md flex items-center justify-center gap-2"
                       >
                         <History size={16} />
@@ -3103,6 +3220,35 @@ export default function AdminDashboard() {
                       </div>
                       <p className="text-[10px] text-[#8b7355]">Paste direct image URL for your logo. It will render on printable bills and customer menu.</p>
                     </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-[#5c4033]">Restaurant Photo / Banner Image URL</label>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="url"
+                          value={settings.coverUrl || ""}
+                          onChange={(e) => setSettings(prev => ({ ...prev, coverUrl: e.target.value }))}
+                          placeholder="https://images.unsplash.com/... or Google Drive URL"
+                          className="w-full bg-white border border-[#e5d5c5] rounded-xl px-4 py-2.5 text-xs text-[#2c1810] font-medium focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30"
+                        />
+                        {settings.coverUrl && (
+                          <img 
+                            src={normalizeImageUrl(settings.coverUrl)} 
+                            alt="Photo Preview" 
+                            className="w-14 h-10 object-cover rounded-lg border border-[#e5d5c5] bg-white shrink-0 shadow-xs" 
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              const match = settings.coverUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || settings.coverUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                              if (match && match[1] && !target.dataset.triedFallback) {
+                                target.dataset.triedFallback = "true";
+                                target.src = `https://lh3.googleusercontent.com/d/${match[1]}`;
+                              }
+                            }}
+                          />
+                        )}
+                      </div>
+                      <p className="text-[10px] text-[#8b7355]">Direct image URL for your restaurant cover or storefront photo shown on customer menu header.</p>
+                    </div>
                   </div>
 
                   {/* Contact & Location */}
@@ -3970,6 +4116,7 @@ export default function AdminDashboard() {
           </div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

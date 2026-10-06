@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { db, handleFirestoreError, OperationType, getAdminSession, logoutAdmin } from "../firebase";
+import { 
+  db, handleFirestoreError, OperationType, getAdminSession, logoutAdmin,
+  getRestaurantCol, getRestaurantDoc, fetchRestaurantBySlug, fetchRestaurantById, RestaurantProfile 
+} from "../firebase";
 import { collection, onSnapshot, query, orderBy, doc, getDoc, Timestamp } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -43,11 +46,12 @@ export default function TableHistory() {
   const [allOrders, setAllOrders] = useState<OrderRequest[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [orderRequests, setOrderRequests] = useState<OrderRequest[]>([]);
+  const [currentRestaurant, setCurrentRestaurant] = useState<RestaurantProfile | null>(null);
 
-  const { tableId } = useParams<{ tableId: string }>();
+  const { restaurantSlug, tableId } = useParams<{ restaurantSlug?: string; tableId?: string }>();
   const navigate = useNavigate();
 
-  // Auth check
+  // Auth check and restaurant resolution
   useEffect(() => {
     const loadingTimeout = setTimeout(() => {
       setLoading(false);
@@ -55,24 +59,44 @@ export default function TableHistory() {
 
     const session = getAdminSession();
     if (!session) {
-      navigate("/login");
+      if (restaurantSlug) {
+        navigate(`/r/${restaurantSlug}/login`);
+      } else {
+        navigate("/login");
+      }
     } else {
       setUser({ uid: "admin", email: "admin@hotel.com", displayName: session.userId } as any);
     }
 
+    async function loadRestaurant() {
+      if (restaurantSlug) {
+        const r = await fetchRestaurantBySlug(restaurantSlug);
+        if (r) setCurrentRestaurant(r);
+      } else if (session?.restaurantId) {
+        const r = await fetchRestaurantById(session.restaurantId);
+        if (r) setCurrentRestaurant(r);
+      } else if (session?.restaurantSlug) {
+        const r = await fetchRestaurantBySlug(session.restaurantSlug);
+        if (r) setCurrentRestaurant(r);
+      }
+    }
+    loadRestaurant();
+
     return () => {
       clearTimeout(loadingTimeout);
     };
-  }, [navigate]);
+  }, [navigate, restaurantSlug]);
+
+  const targetRestaurantId = currentRestaurant?.id || null;
 
   // Fetch all tables (for sidebar counts) and order requests
   useEffect(() => {
-    const tableQuery = query(collection(db, "tables"));
+    const tableQuery = query(getRestaurantCol(targetRestaurantId, "tables"));
     const unsubscribeTables = onSnapshot(tableQuery, (snapshot) => {
       setTables(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Table)));
     }, (error) => handleFirestoreError(error, OperationType.LIST, "tables"));
 
-    const orderQuery = query(collection(db, "orderRequests"), orderBy("createdAt", "desc"));
+    const orderQuery = query(getRestaurantCol(targetRestaurantId, "orderRequests"), orderBy("createdAt", "desc"));
     const unsubscribeOrders = onSnapshot(orderQuery, (snapshot) => {
       const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as OrderRequest));
       setOrderRequests(orders);
@@ -83,14 +107,14 @@ export default function TableHistory() {
       unsubscribeTables();
       unsubscribeOrders();
     };
-  }, []);
+  }, [targetRestaurantId]);
 
   // Fetch the specific table by ID
   useEffect(() => {
     if (!tableId) return;
     const fetchTable = async () => {
       try {
-        const tableDoc = await getDoc(doc(db, "tables", tableId));
+        const tableDoc = await getDoc(getRestaurantDoc(targetRestaurantId, "tables", tableId));
         if (tableDoc.exists()) {
           setTable({ id: tableDoc.id, ...tableDoc.data() } as Table);
         }
@@ -99,7 +123,7 @@ export default function TableHistory() {
       }
     };
     fetchTable();
-  }, [tableId]);
+  }, [tableId, targetRestaurantId]);
 
   // Filter booking history for the current table
   const tableOrders = useMemo(() => {
@@ -188,7 +212,7 @@ export default function TableHistory() {
         <header className="flex justify-between items-center mb-10">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("/admin")}
+              onClick={() => navigate(restaurantSlug ? `/r/${restaurantSlug}/admin` : "/admin")}
               className="p-2 text-[#8b7355] hover:text-[#d4af37] rounded-xl hover:bg-[#fdfaf6] transition-all"
             >
               <ArrowLeft size={20} />

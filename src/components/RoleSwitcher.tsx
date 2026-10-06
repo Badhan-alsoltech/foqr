@@ -43,13 +43,25 @@ export default function RoleSwitcher() {
           onClick={() => navigate("/admin")}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
-            location.pathname.startsWith("/admin") 
+            location.pathname.includes("/admin") && !location.pathname.includes("super-admin")
               ? "bg-[#d4af37] text-[#2c1810]" 
               : "text-[#8b7355] hover:text-[#fdfaf6] hover:bg-[#4a2c1d]"
           )}
         >
           <Shield size={16} />
-          Owner View
+          Restaurant Admin
+        </button>
+        <button
+          onClick={() => navigate("/super-admin")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+            location.pathname.startsWith("/super-admin") 
+              ? "bg-[#d4af37] text-[#2c1810]" 
+              : "text-[#d4af37] hover:text-[#fdfaf6] hover:bg-[#4a2c1d]"
+          )}
+        >
+          <Shield size={16} />
+          Super Admin
         </button>
         <div className="h-px bg-[#4a2c1d] mx-2" />
         <button
