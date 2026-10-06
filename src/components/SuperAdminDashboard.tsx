@@ -335,23 +335,23 @@ export default function SuperAdminDashboard() {
   const activeCount = restaurants.filter(r => r.isActive).length;
 
   return (
-    <div className="min-h-screen bg-[#0e0a08] text-[#f7f2eb] font-sans flex flex-col">
+    <div className="min-h-screen bg-[#fdfaf6] text-[#2c1810] font-sans flex flex-col">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-50 bg-[#160f0c]/90 backdrop-blur-md border-b border-[#d4af37]/20 px-6 py-4 flex items-center justify-between shadow-xl">
+      <header className="sticky top-0 z-50 bg-[#2c1810] text-[#fdfaf6] border-b border-[#4a2c1d] px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#967d28] flex items-center justify-center text-[#160f0c] shadow-lg shadow-[#d4af37]/20">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b39023] flex items-center justify-center text-[#2c1810] shadow-md shadow-[#d4af37]/20">
             <ShieldAlert size={22} strokeWidth={2.5} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-serif font-bold text-lg text-white tracking-wide">
+              <h1 className="font-serif font-bold text-lg text-[#d4af37] tracking-wide">
                 foQR Super Admin Console
               </h1>
               <span className="text-[10px] font-bold bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/40 px-2 py-0.5 rounded-full uppercase tracking-widest">
                 Central Fleet Command
               </span>
             </div>
-            <p className="text-xs text-[#a89078]">
+            <p className="text-xs text-[#bcaaa0]">
               Manage restaurant profiles, handover portals & global operations
             </p>
           </div>
@@ -360,7 +360,7 @@ export default function SuperAdminDashboard() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-[#d4af37] to-[#b39023] text-[#160f0c] font-bold px-4 py-2 rounded-xl text-xs shadow-md shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all"
+            className="flex items-center gap-2 bg-[#d4af37] text-[#2c1810] font-bold px-4 py-2 rounded-xl text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer"
           >
             <Plus size={16} strokeWidth={3} />
             Onboard New Restaurant
@@ -368,7 +368,7 @@ export default function SuperAdminDashboard() {
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-xs text-[#a89078] hover:text-white bg-[#221713] hover:bg-[#33221b] border border-[#3d2b22] px-3 py-2 rounded-xl transition-all"
+            className="flex items-center gap-1.5 text-xs text-[#d4af37] hover:text-[#fdfaf6] bg-[#4a2c1d] hover:bg-[#5c3826] border border-[#5c3826] px-3 py-2 rounded-xl transition-all cursor-pointer"
             title="Sign out of Super Admin"
           >
             <LogOut size={14} />
@@ -381,57 +381,57 @@ export default function SuperAdminDashboard() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
         {/* Metric Cards Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-[#18110e] border border-[#2e2019] rounded-2xl p-4 shadow-lg flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+          <div className="bg-white border border-[#e8dcc4] rounded-2xl p-5 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
               <Store size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-white">{restaurants.length}</div>
-              <div className="text-xs text-[#a89078] font-medium">Total Registered Restaurants</div>
+              <div className="text-2xl font-serif font-bold text-[#2c1810]">{restaurants.length}</div>
+              <div className="text-xs text-[#8b7355] font-medium">Total Registered Restaurants</div>
             </div>
           </div>
 
-          <div className="bg-[#18110e] border border-[#2e2019] rounded-2xl p-4 shadow-lg flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          <div className="bg-white border border-[#e8dcc4] rounded-2xl p-5 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
               <CheckCircle2 size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-white">{activeCount} / {restaurants.length}</div>
-              <div className="text-xs text-[#a89078] font-medium">Active Dining Operations</div>
+              <div className="text-2xl font-serif font-bold text-[#2c1810]">{activeCount} / {restaurants.length}</div>
+              <div className="text-xs text-[#8b7355] font-medium">Active Dining Operations</div>
             </div>
           </div>
 
-          <div className="bg-[#18110e] border border-[#2e2019] rounded-2xl p-4 shadow-lg flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+          <div className="bg-white border border-[#e8dcc4] rounded-2xl p-5 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
               <ShoppingBag size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-white">{globalOrders.length}</div>
-              <div className="text-xs text-[#a89078] font-medium">All-Time Fleet Orders</div>
+              <div className="text-2xl font-serif font-bold text-[#2c1810]">{globalOrders.length}</div>
+              <div className="text-xs text-[#8b7355] font-medium">All-Time Fleet Orders</div>
             </div>
           </div>
 
-          <div className="bg-[#18110e] border border-[#2e2019] rounded-2xl p-4 shadow-lg flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+          <div className="bg-white border border-[#e8dcc4] rounded-2xl p-5 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
               <DollarSign size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-white">₹{totalRevenue.toLocaleString()}</div>
-              <div className="text-xs text-[#a89078] font-medium">Fleet Gross Revenue</div>
+              <div className="text-2xl font-serif font-bold text-[#2c1810]">₹{totalRevenue.toLocaleString()}</div>
+              <div className="text-xs text-[#8b7355] font-medium">Fleet Gross Revenue</div>
             </div>
           </div>
         </div>
 
         {/* Navigation Tabs & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[#2e2019] pb-4">
-          <div className="flex items-center gap-2 bg-[#18110e] p-1 rounded-xl border border-[#2e2019]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[#e8dcc4] pb-4">
+          <div className="flex items-center gap-2 bg-[#f3ede4] p-1 rounded-xl border border-[#e8dcc4]">
             <button
               onClick={() => setActiveTab("restaurants")}
               className={cn(
-                "px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2",
+                "px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer",
                 activeTab === "restaurants"
-                  ? "bg-[#d4af37] text-[#160f0c] shadow-sm"
-                  : "text-[#a89078] hover:text-white"
+                  ? "bg-[#d4af37] text-[#2c1810] shadow-sm font-bold"
+                  : "text-[#8b7355] hover:text-[#2c1810]"
               )}
             >
               <Store size={14} />
@@ -440,10 +440,10 @@ export default function SuperAdminDashboard() {
             <button
               onClick={() => setActiveTab("global-orders")}
               className={cn(
-                "px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2",
+                "px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer",
                 activeTab === "global-orders"
-                  ? "bg-[#d4af37] text-[#160f0c] shadow-sm"
-                  : "text-[#a89078] hover:text-white"
+                  ? "bg-[#d4af37] text-[#2c1810] shadow-sm font-bold"
+                  : "text-[#8b7355] hover:text-[#2c1810]"
               )}
             >
               <ShoppingBag size={14} />
@@ -453,13 +453,13 @@ export default function SuperAdminDashboard() {
 
           {activeTab === "restaurants" && (
             <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7355]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b7355]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search restaurant by name, slug..."
-                className="w-full pl-10 pr-4 py-2 bg-[#18110e] border border-[#2e2019] rounded-xl text-white placeholder-[#6d5648] text-xs focus:outline-none focus:border-[#d4af37]"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-[#e8dcc4] rounded-xl text-[#2c1810] placeholder-[#a89078] text-xs focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]"
               />
             </div>
           )}
@@ -469,19 +469,19 @@ export default function SuperAdminDashboard() {
         {activeTab === "restaurants" && (
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-20 text-[#a89078] text-sm animate-pulse">
+              <div className="text-center py-20 text-[#8b7355] text-sm animate-pulse">
                 Loading restaurant profiles...
               </div>
             ) : filteredRestaurants.length === 0 ? (
-              <div className="bg-[#18110e] border border-[#2e2019] rounded-2xl p-12 text-center space-y-4">
-                <Store className="w-12 h-12 text-[#6d5648] mx-auto" />
-                <h3 className="text-base font-semibold text-white">No Restaurants Found</h3>
-                <p className="text-xs text-[#a89078] max-w-md mx-auto">
+              <div className="bg-white border border-[#e8dcc4] rounded-2xl p-12 text-center space-y-4 shadow-xs">
+                <Store className="w-12 h-12 text-[#8b7355] mx-auto" />
+                <h3 className="text-base font-serif font-bold text-[#2c1810]">No Restaurants Found</h3>
+                <p className="text-xs text-[#8b7355] max-w-md mx-auto">
                   {searchQuery ? "No restaurant matches your search criteria." : "You haven't added any restaurants yet. Click 'Onboard New Restaurant' above to launch your first location."}
                 </p>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="inline-flex items-center gap-2 bg-[#d4af37] text-[#160f0c] font-bold px-4 py-2 rounded-xl text-xs"
+                  className="inline-flex items-center gap-2 bg-[#d4af37] text-[#2c1810] font-bold px-4 py-2 rounded-xl text-xs hover:brightness-110 shadow-sm cursor-pointer"
                 >
                   <Plus size={16} /> Onboard Restaurant Now
                 </button>
@@ -497,14 +497,14 @@ export default function SuperAdminDashboard() {
                     <div
                       key={r.id}
                       className={cn(
-                        "bg-[#18110e] border rounded-2xl p-5 shadow-lg space-y-4 transition-all relative overflow-hidden",
-                        r.isActive ? "border-[#2e2019] hover:border-[#d4af37]/40" : "border-red-900/30 opacity-70"
+                        "bg-white border rounded-2xl p-5 shadow-xs space-y-4 transition-all relative overflow-hidden",
+                        r.isActive ? "border-[#e8dcc4] hover:border-[#d4af37] hover:shadow-md" : "border-red-200 bg-red-50/20 opacity-80"
                       )}
                     >
                       {/* Top Header of Card */}
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
-                          <div className="w-14 h-14 rounded-xl bg-[#241a15] border border-[#3d2b22] flex items-center justify-center text-[#d4af37] font-serif font-bold text-xl shrink-0 overflow-hidden relative shadow-sm">
+                          <div className="w-14 h-14 rounded-xl bg-[#fdfaf6] border border-[#e8dcc4] flex items-center justify-center text-[#d4af37] font-serif font-bold text-xl shrink-0 overflow-hidden relative shadow-2xs">
                             {r.coverUrl ? (
                               <img 
                                 src={normalizeImageUrl(r.coverUrl)} 
@@ -525,23 +525,23 @@ export default function SuperAdminDashboard() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h2 className="text-base font-bold text-white">{r.name}</h2>
+                              <h2 className="text-base font-serif font-bold text-[#2c1810]">{r.name}</h2>
                               <span className={cn(
                                 "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider",
                                 r.isActive 
-                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                                  : "bg-red-500/10 text-red-400 border border-red-500/20"
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200" 
+                                  : "bg-red-50 text-red-700 border border-red-200"
                               )}>
                                 {r.isActive ? "Active" : "Suspended"}
                               </span>
                             </div>
-                            <p className="text-xs text-[#a89078] line-clamp-1">{r.subtitle || "FINE DINING & MULTI CUISINE"}</p>
+                            <p className="text-xs text-[#8b7355] line-clamp-1">{r.subtitle || "FINE DINING & MULTI CUISINE"}</p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="font-mono text-[11px] text-[#d4af37] bg-[#241a15] px-2 py-0.5 rounded border border-[#3d2b22]">
+                              <span className="font-mono text-[11px] text-[#2c1810] bg-[#f5efe6] px-2 py-0.5 rounded border border-[#e8dcc4]">
                                 /{r.slug}
                               </span>
                               {r.gstin && (
-                                <span className="text-[10px] text-[#8c7355] bg-[#120d0b] px-1.5 py-0.5 rounded border border-[#2e2019] font-mono">
+                                <span className="text-[10px] text-[#8b7355] bg-[#fbf9f5] px-1.5 py-0.5 rounded border border-[#e8dcc4] font-mono">
                                   GST: {r.gstin}
                                 </span>
                               )}
@@ -553,7 +553,7 @@ export default function SuperAdminDashboard() {
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setHandoverModalRestaurant(r)}
-                            className="bg-[#241a15] hover:bg-[#d4af37] hover:text-[#160f0c] text-[#d4af37] border border-[#d4af37]/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                            className="bg-[#f5efe6] hover:bg-[#ebdcc7] text-[#2c1810] border border-[#e8dcc4] px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                             title="Open Restaurant Handover Pack"
                           >
                             <Share2 size={13} />
@@ -561,7 +561,7 @@ export default function SuperAdminDashboard() {
                           </button>
                           <button
                             onClick={() => handleImpersonateRestaurant(r)}
-                            className="bg-[#d4af37] hover:brightness-110 text-[#160f0c] px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                            className="bg-[#2c1810] hover:bg-[#4a2c1d] text-[#fdfaf6] px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                             title="Enter Restaurant Admin Console directly"
                           >
                             <ExternalLink size={13} />
@@ -571,71 +571,71 @@ export default function SuperAdminDashboard() {
                       </div>
 
                       {/* URLs Handover Box */}
-                      <div className="bg-[#120d0b] rounded-xl p-3 border border-[#261b16] space-y-2 text-xs">
+                      <div className="bg-[#fdfaf6] rounded-xl p-3 border border-[#e8dcc4] space-y-2 text-xs">
                         {/* Customer URL */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 overflow-hidden">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7355] w-20 shrink-0">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b7355] w-20 shrink-0">
                               Guest Menu:
                             </span>
                             <a
                               href={customerUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-blue-400 hover:underline truncate font-mono text-[11px]"
+                              className="text-blue-600 hover:underline truncate font-mono text-[11px]"
                             >
                               {customerUrl}
                             </a>
                           </div>
                           <button
                             onClick={() => copyToClipboard(customerUrl, `cust_${r.id}`)}
-                            className="text-[#8c7355] hover:text-[#d4af37] p-1 rounded transition-colors"
+                            className="text-[#8b7355] hover:text-[#2c1810] p-1 rounded transition-colors cursor-pointer"
                             title="Copy Guest URL"
                           >
-                            {copiedKey === `cust_${r.id}` ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                            {copiedKey === `cust_${r.id}` ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                           </button>
                         </div>
 
                         {/* Admin Portal URL */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 overflow-hidden">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7355] w-20 shrink-0">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b7355] w-20 shrink-0">
                               Admin Portal:
                             </span>
                             <a
                               href={adminUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-[#e5c185] hover:underline truncate font-mono text-[11px]"
+                              className="text-[#a3791a] hover:underline truncate font-mono text-[11px] font-semibold"
                             >
                               {adminUrl}
                             </a>
                           </div>
                           <button
                             onClick={() => copyToClipboard(adminUrl, `admin_${r.id}`)}
-                            className="text-[#8c7355] hover:text-[#d4af37] p-1 rounded transition-colors"
+                            className="text-[#8b7355] hover:text-[#2c1810] p-1 rounded transition-colors cursor-pointer"
                             title="Copy Admin Portal URL"
                           >
-                            {copiedKey === `admin_${r.id}` ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                            {copiedKey === `admin_${r.id}` ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                           </button>
                         </div>
 
                         {/* Owner Credentials */}
-                        <div className="pt-2 border-t border-[#261b16] flex items-center justify-between text-[11px]">
+                        <div className="pt-2 border-t border-[#e8dcc4] flex items-center justify-between text-[11px]">
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 text-[#a89078]">
+                            <div className="flex items-center gap-1.5 text-[#8b7355]">
                               <Key size={12} className="text-[#d4af37]" />
                               <span>Login ID:</span>
-                              <span className="font-mono text-white font-semibold">{r.adminUserId}</span>
+                              <span className="font-mono text-[#2c1810] font-semibold">{r.adminUserId}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-[#a89078]">
+                            <div className="flex items-center gap-1.5 text-[#8b7355]">
                               <span>Pass:</span>
-                              <span className="font-mono text-white font-semibold">
+                              <span className="font-mono text-[#2c1810] font-semibold">
                                 {isPwVisible ? r.adminPassword : "••••••••"}
                               </span>
                               <button
                                 onClick={() => togglePasswordVisibility(r.id)}
-                                className="text-[#8c7355] hover:text-white"
+                                className="text-[#8b7355] hover:text-[#2c1810] cursor-pointer"
                               >
                                 {isPwVisible ? <EyeOff size={12} /> : <Eye size={12} />}
                               </button>
@@ -644,7 +644,7 @@ export default function SuperAdminDashboard() {
 
                           <button
                             onClick={() => copyToClipboard(`ID: ${r.adminUserId} | Password: ${r.adminPassword}`, `cred_${r.id}`)}
-                            className="text-[10px] text-[#d4af37] hover:underline flex items-center gap-1"
+                            className="text-[10px] text-[#a3791a] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                           >
                             {copiedKey === `cred_${r.id}` ? "Copied!" : "Copy Creds"}
                           </button>
@@ -652,8 +652,8 @@ export default function SuperAdminDashboard() {
                       </div>
 
                       {/* Card Footer Actions */}
-                      <div className="flex items-center justify-between text-xs pt-1 border-t border-[#241a15]">
-                        <div className="flex items-center gap-3 text-[#8c7355] text-[11px]">
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-[#f0e6d6]">
+                        <div className="flex items-center gap-3 text-[#8b7355] text-[11px]">
                           {r.phone && <span>📞 {r.phone}</span>}
                           {r.taxRate !== undefined && <span>GST: {r.taxRate}%</span>}
                         </div>
@@ -662,8 +662,8 @@ export default function SuperAdminDashboard() {
                           <button
                             onClick={() => handleToggleStatus(r)}
                             className={cn(
-                              "px-2.5 py-1 rounded text-[11px] font-medium transition-all",
-                              r.isActive ? "text-amber-400 hover:bg-amber-950/30" : "text-emerald-400 hover:bg-emerald-950/30"
+                              "px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer",
+                              r.isActive ? "text-amber-700 hover:bg-amber-50" : "text-emerald-700 hover:bg-emerald-50"
                             )}
                           >
                             {r.isActive ? "Deactivate" : "Activate"}
@@ -673,14 +673,14 @@ export default function SuperAdminDashboard() {
                               setEditingRestaurant(r);
                               setIsEditModalOpen(true);
                             }}
-                            className="text-[#a89078] hover:text-white p-1.5 rounded-lg hover:bg-[#221713] transition-all"
+                            className="text-[#8b7355] hover:text-[#2c1810] p-1.5 rounded-lg hover:bg-[#f5efe6] transition-all cursor-pointer"
                             title="Edit Restaurant Details"
                           >
                             <Edit3 size={15} />
                           </button>
                           <button
                             onClick={() => handleDelete(r.id, r.name)}
-                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-950/30 transition-all"
+                            className="text-red-600 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition-all cursor-pointer"
                             title="Delete Restaurant Profile"
                           >
                             <Trash2 size={15} />
@@ -697,25 +697,25 @@ export default function SuperAdminDashboard() {
 
         {/* View 2: Global Orders Feed */}
         {activeTab === "global-orders" && (
-          <div className="bg-[#18110e] border border-[#2e2019] rounded-2xl overflow-hidden shadow-xl">
-            <div className="p-4 border-b border-[#2e2019] flex items-center justify-between">
+          <div className="bg-white border border-[#e8dcc4] rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-4 border-b border-[#e8dcc4] bg-[#fdfaf6] flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-sm text-white">Fleet-Wide Live Order Stream</h3>
-                <p className="text-xs text-[#a89078]">Aggregated live dining orders across all restaurant locations</p>
+                <h3 className="font-serif font-bold text-sm text-[#2c1810]">Fleet-Wide Live Order Stream</h3>
+                <p className="text-xs text-[#8b7355]">Aggregated live dining orders across all restaurant locations</p>
               </div>
-              <span className="text-xs text-[#d4af37] font-semibold bg-[#241a15] px-3 py-1 rounded-full border border-[#3d2b22]">
+              <span className="text-xs text-[#2c1810] font-semibold bg-[#f5efe6] px-3 py-1 rounded-full border border-[#e8dcc4]">
                 {globalOrders.length} Total Orders
               </span>
             </div>
 
             {globalOrders.length === 0 ? (
-              <div className="p-12 text-center text-[#a89078] text-xs">
+              <div className="p-12 text-center text-[#8b7355] text-xs">
                 No active or historical orders found in the system yet.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#120d0b] text-[#8c7355] uppercase tracking-wider text-[10px] border-b border-[#261b16]">
+                  <thead className="bg-[#f5efe6] text-[#6b584d] uppercase tracking-wider text-[10px] border-b border-[#e8dcc4]">
                     <tr>
                       <th className="py-3 px-4">Restaurant</th>
                       <th className="py-3 px-4">Order ID</th>
@@ -726,37 +726,37 @@ export default function SuperAdminDashboard() {
                       <th className="py-3 px-4">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#261b16]">
+                  <tbody className="divide-y divide-[#f0e6d6]">
                     {globalOrders.map((ord) => {
                       const matchedRestaurant = restaurants.find(r => r.id === ord.restaurantId);
                       return (
-                        <tr key={ord.id} className="hover:bg-[#221713] transition-colors">
-                          <td className="py-3 px-4 font-semibold text-white">
+                        <tr key={ord.id} className="hover:bg-[#fbf9f5] transition-colors">
+                          <td className="py-3 px-4 font-semibold text-[#2c1810]">
                             {matchedRestaurant ? matchedRestaurant.name : (ord.restaurantId || "Default")}
                           </td>
-                          <td className="py-3 px-4 font-mono text-[11px] text-[#a89078]">
+                          <td className="py-3 px-4 font-mono text-[11px] text-[#8b7355]">
                             #{ord.id.slice(0, 7)}
                           </td>
-                          <td className="py-3 px-4 font-medium text-[#e5c185]">
+                          <td className="py-3 px-4 font-medium text-[#2c1810]">
                             {ord.tableNumber || "Direct"}
                           </td>
                           <td className="py-3 px-4">
-                            <div className="text-white font-medium">{ord.customerName || "Guest"}</div>
-                            <div className="text-[10px] text-[#8c7355]">{ord.customerPhone}</div>
+                            <div className="text-[#2c1810] font-medium">{ord.customerName || "Guest"}</div>
+                            <div className="text-[10px] text-[#8b7355]">{ord.customerPhone}</div>
                           </td>
-                          <td className="py-3 px-4 text-[#a89078]">
+                          <td className="py-3 px-4 text-[#8b7355]">
                             {ord.items?.length ? `${ord.items.length} items` : "-"}
                           </td>
-                          <td className="py-3 px-4 font-bold text-white">
+                          <td className="py-3 px-4 font-bold text-[#2c1810]">
                             ₹{ord.totalAmount?.toLocaleString() || 0}
                           </td>
                           <td className="py-3 px-4">
                             <span className={cn(
                               "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                              ord.status === "completed" && "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-                              ord.status === "approved" && "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-                              ord.status === "pending" && "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-                              ord.status === "rejected" && "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                              ord.status === "completed" && "bg-emerald-50 text-emerald-700 border border-emerald-200",
+                              ord.status === "approved" && "bg-blue-50 text-blue-700 border border-blue-200",
+                              ord.status === "pending" && "bg-amber-50 text-amber-700 border border-amber-200",
+                              ord.status === "rejected" && "bg-rose-50 text-rose-700 border border-rose-200"
                             )}>
                               {ord.status}
                             </span>
@@ -775,32 +775,32 @@ export default function SuperAdminDashboard() {
       {/* MODAL 1: Onboard New Restaurant */}
       <AnimatePresence>
         {isAddModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#18110e] border border-[#d4af37]/40 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto"
+              className="bg-white border border-[#e8dcc4] rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto text-[#2c1810]"
             >
-              <div className="flex items-center justify-between border-b border-[#2e2019] pb-4">
+              <div className="flex items-center justify-between border-b border-[#e8dcc4] pb-4">
                 <div>
-                  <h3 className="text-lg font-serif font-bold text-white">
+                  <h3 className="text-lg font-serif font-bold text-[#2c1810]">
                     Onboard New Restaurant Profile
                   </h3>
-                  <p className="text-xs text-[#a89078]">
+                  <p className="text-xs text-[#8b7355]">
                     Set up restaurant branding, URL slug, and handover credentials
                   </p>
                 </div>
                 <button
                   onClick={() => setIsAddModalOpen(false)}
-                  className="text-[#a89078] hover:text-white text-sm p-1 rounded"
+                  className="text-[#8b7355] hover:text-[#2c1810] text-sm p-1 rounded cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
               {formError && (
-                <div className="p-3 bg-red-950/60 border border-red-500/40 rounded-xl text-red-200 text-xs">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs">
                   {formError}
                 </div>
               )}
@@ -808,7 +808,7 @@ export default function SuperAdminDashboard() {
               <form onSubmit={handleCreateRestaurant} className="space-y-4">
                 {/* Restaurant Name */}
                 <div>
-                  <label className="block text-[11px] font-bold text-[#c9b89c] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#4a2c1d] uppercase tracking-wider mb-1">
                     Restaurant Name *
                   </label>
                   <input
@@ -817,17 +817,17 @@ export default function SuperAdminDashboard() {
                     value={newRestaurant.name}
                     onChange={(e) => handleNameChange(e.target.value)}
                     placeholder="e.g. Royal Spice Bistro"
-                    className="w-full px-3.5 py-2.5 bg-[#241a15] border border-[#3d2b22] focus:border-[#d4af37] rounded-xl text-white text-xs focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#fdfaf6] border border-[#e8dcc4] focus:border-[#d4af37] rounded-xl text-[#2c1810] text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
                   />
                 </div>
 
                 {/* Slug (URL key) */}
                 <div>
-                  <label className="block text-[11px] font-bold text-[#c9b89c] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#4a2c1d] uppercase tracking-wider mb-1">
                     Restaurant URL Slug *
                   </label>
                   <div className="flex items-center">
-                    <span className="bg-[#120d0b] border border-r-0 border-[#3d2b22] px-3 py-2.5 rounded-l-xl text-xs text-[#8c7355] font-mono">
+                    <span className="bg-[#f5efe6] border border-r-0 border-[#e8dcc4] px-3 py-2.5 rounded-l-xl text-xs text-[#8b7355] font-mono">
                       /r/
                     </span>
                     <input
@@ -836,17 +836,17 @@ export default function SuperAdminDashboard() {
                       value={newRestaurant.slug}
                       onChange={(e) => setNewRestaurant(prev => ({ ...prev, slug: e.target.value }))}
                       placeholder="royal-spice-bistro"
-                      className="w-full px-3.5 py-2.5 bg-[#241a15] border border-[#3d2b22] focus:border-[#d4af37] rounded-r-xl text-white text-xs font-mono focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-[#fdfaf6] border border-[#e8dcc4] focus:border-[#d4af37] rounded-r-xl text-[#2c1810] text-xs font-mono focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
                     />
                   </div>
-                  <p className="text-[10px] text-[#8c7355] mt-1">
+                  <p className="text-[10px] text-[#8b7355] mt-1">
                     This forms the unique link handed over to the restaurant owner.
                   </p>
                 </div>
 
                 {/* Subtitle / Tagline */}
                 <div>
-                  <label className="block text-[11px] font-bold text-[#c9b89c] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#4a2c1d] uppercase tracking-wider mb-1">
                     Tagline / Subtitle
                   </label>
                   <input
@@ -854,19 +854,19 @@ export default function SuperAdminDashboard() {
                     value={newRestaurant.subtitle}
                     onChange={(e) => setNewRestaurant(prev => ({ ...prev, subtitle: e.target.value }))}
                     placeholder="e.g. Authentic North Indian & Tandoori Cuisine"
-                    className="w-full px-3.5 py-2.5 bg-[#241a15] border border-[#3d2b22] focus:border-[#d4af37] rounded-xl text-white text-xs focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#fdfaf6] border border-[#e8dcc4] focus:border-[#d4af37] rounded-xl text-[#2c1810] text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
                   />
                 </div>
 
                 {/* Restaurant Visuals: Photo URL & Logo URL */}
-                <div className="bg-[#120d0b] p-4 rounded-2xl border border-[#2e2019] space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#d4af37]">
-                    <ImageIcon size={14} /> Restaurant Visuals & Imagery
+                <div className="bg-[#fbf9f5] p-4 rounded-2xl border border-[#e8dcc4] space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#2c1810]">
+                    <ImageIcon size={14} className="text-[#d4af37]" /> Restaurant Visuals & Imagery
                   </div>
 
                   {/* Photo / Banner URL */}
                   <div>
-                    <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                       Restaurant Photo / Cover Image URL
                     </label>
                     <div className="flex items-center gap-3">
@@ -875,25 +875,25 @@ export default function SuperAdminDashboard() {
                         value={newRestaurant.coverUrl}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, coverUrl: e.target.value }))}
                         placeholder="https://images.unsplash.com/... or Google Drive URL"
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                       {newRestaurant.coverUrl && (
                         <img
                           src={normalizeImageUrl(newRestaurant.coverUrl)}
                           alt="Cover Preview"
-                          className="w-14 h-9 object-cover rounded-lg border border-[#3d2b22] bg-[#1a130f] shrink-0"
+                          className="w-14 h-9 object-cover rounded-lg border border-[#e8dcc4] bg-[#fdfaf6] shrink-0"
                           referrerPolicy="no-referrer"
                         />
                       )}
                     </div>
-                    <p className="text-[10px] text-[#8c7355] mt-1">
+                    <p className="text-[10px] text-[#8b7355] mt-1">
                       Displayed on the customer menu header and fleet restaurant cards.
                     </p>
                   </div>
 
                   {/* Logo URL */}
                   <div>
-                    <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                       Restaurant Logo URL
                     </label>
                     <div className="flex items-center gap-3">
@@ -902,18 +902,18 @@ export default function SuperAdminDashboard() {
                         value={newRestaurant.logoUrl}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, logoUrl: e.target.value }))}
                         placeholder="https://example.com/logo.png"
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                       {newRestaurant.logoUrl && (
                         <img
                           src={normalizeImageUrl(newRestaurant.logoUrl)}
                           alt="Logo Preview"
-                          className="w-9 h-9 object-contain rounded-lg border border-[#3d2b22] bg-white p-0.5 shrink-0"
+                          className="w-9 h-9 object-contain rounded-lg border border-[#e8dcc4] bg-white p-0.5 shrink-0"
                           referrerPolicy="no-referrer"
                         />
                       )}
                     </div>
-                    <p className="text-[10px] text-[#8c7355] mt-1">
+                    <p className="text-[10px] text-[#8b7355] mt-1">
                       Appears on customer menus, printable bills, and receipt headers.
                     </p>
                   </div>
@@ -922,7 +922,7 @@ export default function SuperAdminDashboard() {
                 {/* Contact: Phone & Email */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-[#c9b89c] uppercase tracking-wider mb-1">
+                    <label className="block text-[11px] font-bold text-[#4a2c1d] uppercase tracking-wider mb-1">
                       Phone Number
                     </label>
                     <input
@@ -930,11 +930,11 @@ export default function SuperAdminDashboard() {
                       value={newRestaurant.phone}
                       onChange={(e) => setNewRestaurant(prev => ({ ...prev, phone: e.target.value }))}
                       placeholder="+91 98765 43210"
-                      className="w-full px-3.5 py-2.5 bg-[#241a15] border border-[#3d2b22] focus:border-[#d4af37] rounded-xl text-white text-xs focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-[#fdfaf6] border border-[#e8dcc4] focus:border-[#d4af37] rounded-xl text-[#2c1810] text-xs focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-[#c9b89c] uppercase tracking-wider mb-1">
+                    <label className="block text-[11px] font-bold text-[#4a2c1d] uppercase tracking-wider mb-1">
                       Email Address
                     </label>
                     <input
@@ -942,14 +942,14 @@ export default function SuperAdminDashboard() {
                       value={newRestaurant.email}
                       onChange={(e) => setNewRestaurant(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="owner@royalspice.com"
-                      className="w-full px-3.5 py-2.5 bg-[#241a15] border border-[#3d2b22] focus:border-[#d4af37] rounded-xl text-white text-xs focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-[#fdfaf6] border border-[#e8dcc4] focus:border-[#d4af37] rounded-xl text-[#2c1810] text-xs focus:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Address */}
                 <div>
-                  <label className="block text-[11px] font-bold text-[#c9b89c] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#4a2c1d] uppercase tracking-wider mb-1">
                     Physical Address (Prints on Bill Header)
                   </label>
                   <input
@@ -957,18 +957,18 @@ export default function SuperAdminDashboard() {
                     value={newRestaurant.address}
                     onChange={(e) => setNewRestaurant(prev => ({ ...prev, address: e.target.value }))}
                     placeholder="Sector 29, Food Court, Gurugram"
-                    className="w-full px-3.5 py-2.5 bg-[#241a15] border border-[#3d2b22] focus:border-[#d4af37] rounded-xl text-white text-xs focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#fdfaf6] border border-[#e8dcc4] focus:border-[#d4af37] rounded-xl text-[#2c1810] text-xs focus:outline-none"
                   />
                 </div>
 
                 {/* Legal & Taxation Compliance */}
-                <div className="bg-[#120d0b] p-4 rounded-2xl border border-[#2e2019] space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#d4af37]">
-                    <FileText size={14} /> Legal & Taxation Compliance
+                <div className="bg-[#fbf9f5] p-4 rounded-2xl border border-[#e8dcc4] space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#2c1810]">
+                    <FileText size={14} className="text-[#d4af37]" /> Legal & Taxation Compliance
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                         GSTIN Number
                       </label>
                       <input
@@ -976,11 +976,11 @@ export default function SuperAdminDashboard() {
                         value={newRestaurant.gstin}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, gstin: e.target.value }))}
                         placeholder="07AAAAA0000A1Z5"
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white font-mono uppercase text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] font-mono uppercase text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                         FSSAI License No.
                       </label>
                       <input
@@ -988,14 +988,14 @@ export default function SuperAdminDashboard() {
                         value={newRestaurant.fssai}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, fssai: e.target.value }))}
                         placeholder="10021011000432"
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white font-mono text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] font-mono text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                         GST / Tax Rate (%)
                       </label>
                       <input
@@ -1005,14 +1005,14 @@ export default function SuperAdminDashboard() {
                         step="0.1"
                         value={newRestaurant.taxRate}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }))}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
-                      <p className="text-[9px] text-[#8c7355] mt-0.5">
+                      <p className="text-[9px] text-[#8b7355] mt-0.5">
                         Splits into CGST ({(newRestaurant.taxRate / 2).toFixed(1)}%) & SGST ({(newRestaurant.taxRate / 2).toFixed(1)}%)
                       </p>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                         Service Charge Rate (%)
                       </label>
                       <input
@@ -1022,19 +1022,19 @@ export default function SuperAdminDashboard() {
                         step="0.1"
                         value={newRestaurant.serviceChargeRate}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, serviceChargeRate: parseFloat(e.target.value) || 0 }))}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Bill Customization & Receipt Header Preview */}
-                <div className="bg-[#120d0b] p-4 rounded-2xl border border-[#2e2019] space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#d4af37]">
-                    <Receipt size={14} /> Bill Receipt Customization
+                <div className="bg-[#fbf9f5] p-4 rounded-2xl border border-[#e8dcc4] space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#2c1810]">
+                    <Receipt size={14} className="text-[#d4af37]" /> Bill Receipt Customization
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                       Bill Footer / Thank You Note
                     </label>
                     <input
@@ -1042,38 +1042,38 @@ export default function SuperAdminDashboard() {
                       value={newRestaurant.billFooter}
                       onChange={(e) => setNewRestaurant(prev => ({ ...prev, billFooter: e.target.value }))}
                       placeholder="THANK YOU FOR DINING WITH US"
-                      className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] text-xs focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
 
                   {/* Live Bill Receipt Preview Box */}
-                  <div className="bg-white p-3 rounded-xl border border-slate-300 font-mono text-[9px] text-slate-800 space-y-1 leading-tight shadow-xs select-none">
-                    <div className="text-center border-b border-dashed border-slate-300 pb-1">
+                  <div className="bg-white p-3 rounded-xl border border-stone-200 font-mono text-[9px] text-stone-800 space-y-1 leading-tight shadow-xs select-none">
+                    <div className="text-center border-b border-dashed border-stone-300 pb-1">
                       <p className="font-extrabold uppercase text-[#2c1810] text-[10px]">{newRestaurant.name || "Restaurant Name"}</p>
                       {newRestaurant.subtitle && (
-                        <p className="text-[8px] text-slate-600 uppercase font-semibold">{newRestaurant.subtitle}</p>
+                        <p className="text-[8px] text-stone-600 uppercase font-semibold">{newRestaurant.subtitle}</p>
                       )}
-                      <p className="text-[7.5px] text-slate-500">{newRestaurant.address || "Physical Address"} {newRestaurant.phone ? `| Ph: ${newRestaurant.phone}` : ''}</p>
-                      <p className="text-[7.5px] font-bold text-slate-700">GSTIN: {newRestaurant.gstin || 'N/A'} | FSSAI: {newRestaurant.fssai || 'N/A'}</p>
+                      <p className="text-[7.5px] text-stone-500">{newRestaurant.address || "Physical Address"} {newRestaurant.phone ? `| Ph: ${newRestaurant.phone}` : ''}</p>
+                      <p className="text-[7.5px] font-bold text-stone-700">GSTIN: {newRestaurant.gstin || 'N/A'} | FSSAI: {newRestaurant.fssai || 'N/A'}</p>
                     </div>
-                    <div className="text-center pt-1 text-[8px] font-extrabold text-slate-700">
+                    <div className="text-center pt-1 text-[8px] font-extrabold text-stone-700">
                       *** {newRestaurant.billFooter || "THANK YOU FOR DINING WITH US"} ***
                     </div>
                   </div>
                 </div>
 
                 {/* Handover Credentials Section */}
-                <div className="bg-[#120d0b] p-4 rounded-2xl border border-[#2e2019] space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#d4af37]">
-                    <Key size={14} /> Handover Admin Credentials
+                <div className="bg-[#fbf9f5] p-4 rounded-2xl border border-[#e8dcc4] space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#2c1810]">
+                    <Key size={14} className="text-[#d4af37]" /> Handover Admin Credentials
                   </div>
-                  <p className="text-[11px] text-[#8c7355]">
+                  <p className="text-[11px] text-[#8b7355]">
                     These credentials will be provided to the restaurant owner so they can log into their dashboard.
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                         Admin User ID *
                       </label>
                       <input
@@ -1081,11 +1081,11 @@ export default function SuperAdminDashboard() {
                         required
                         value={newRestaurant.adminUserId}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, adminUserId: e.target.value }))}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white font-mono text-xs"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] font-mono text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-[#6b584d] uppercase mb-1">
                         Admin Password *
                       </label>
                       <input
@@ -1093,14 +1093,14 @@ export default function SuperAdminDashboard() {
                         required
                         value={newRestaurant.adminPassword}
                         onChange={(e) => setNewRestaurant(prev => ({ ...prev, adminPassword: e.target.value }))}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white font-mono text-xs"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] font-mono text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Starter Menu Checkbox */}
-                <label className="flex items-center gap-2 cursor-pointer bg-[#241a15] p-3 rounded-xl border border-[#3d2b22]">
+                <label className="flex items-center gap-2 cursor-pointer bg-[#fbf9f5] p-3 rounded-xl border border-[#e8dcc4]">
                   <input
                     type="checkbox"
                     checked={newRestaurant.seedMenu}
@@ -1108,26 +1108,26 @@ export default function SuperAdminDashboard() {
                     className="w-4 h-4 accent-[#d4af37] rounded"
                   />
                   <div className="text-xs">
-                    <span className="font-semibold text-white">Pre-populate Starter Menu & Tables</span>
-                    <p className="text-[10px] text-[#8c7355]">
+                    <span className="font-semibold text-[#2c1810]">Pre-populate Starter Menu & Tables</span>
+                    <p className="text-[10px] text-[#8b7355]">
                       Instantly adds standard categories (Starters, Mains, Breads, Drinks) & sample dishes so the restaurant can test immediately.
                     </p>
                   </div>
                 </label>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2e2019]">
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#e8dcc4]">
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl border border-[#3d2b22] text-xs text-[#a89078] hover:text-white"
+                    className="px-4 py-2.5 rounded-xl border border-[#e8dcc4] bg-[#f5efe6] hover:bg-[#ebdcc7] text-xs text-[#2c1810] cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#b39023] text-[#160f0c] font-bold text-xs shadow-md shadow-[#d4af37]/20 hover:brightness-110 disabled:opacity-50"
+                    className="px-6 py-2.5 rounded-xl bg-[#d4af37] text-[#2c1810] font-bold text-xs shadow-sm hover:brightness-110 disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? "Creating & Initializing..." : "Create Restaurant & Generate Handover"}
                   </button>
@@ -1141,49 +1141,49 @@ export default function SuperAdminDashboard() {
       {/* MODAL 2: Handover Pack Modal */}
       <AnimatePresence>
         {handoverModalRestaurant && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#18110e] border border-[#d4af37] rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5 my-8"
+              className="bg-white border border-[#e8dcc4] rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5 my-8 text-[#2c1810]"
             >
-              <div className="flex items-center justify-between border-b border-[#2e2019] pb-4">
+              <div className="flex items-center justify-between border-b border-[#e8dcc4] pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
                     <CheckCircle2 size={22} />
                   </div>
                   <div>
-                    <h3 className="text-base font-serif font-bold text-white">
+                    <h3 className="text-base font-serif font-bold text-[#2c1810]">
                       Restaurant Handover Package
                     </h3>
-                    <p className="text-xs text-[#a89078]">{handoverModalRestaurant.name}</p>
+                    <p className="text-xs text-[#8b7355]">{handoverModalRestaurant.name}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setHandoverModalRestaurant(null)}
-                  className="text-[#a89078] hover:text-white text-sm p-1 rounded"
+                  className="text-[#8b7355] hover:text-[#2c1810] hover:bg-[#f5efe6] text-sm p-1.5 rounded-lg transition-colors"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Ready-to-copy summary message */}
-              <div className="bg-[#120d0b] p-4 rounded-2xl border border-[#2e2019] space-y-4">
-                <div className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">
+              <div className="bg-[#fbf9f5] p-4 rounded-2xl border border-[#e8dcc4] space-y-4">
+                <div className="text-xs font-semibold text-[#8b5e34] uppercase tracking-wider">
                   Handover URLs & Credentials
                 </div>
 
                 {/* QR / Guest Link */}
                 <div className="space-y-1">
-                  <span className="text-[10px] text-[#8c7355] uppercase font-bold">1. Customer Menu / QR URL</span>
-                  <div className="flex items-center justify-between bg-[#1b1410] p-2.5 rounded-xl border border-[#33221b]">
-                    <span className="font-mono text-xs text-blue-400 truncate">
+                  <span className="text-[10px] text-[#8b7355] uppercase font-bold">1. Customer Menu / QR URL</span>
+                  <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-[#e8dcc4] shadow-xs">
+                    <span className="font-mono text-xs text-blue-600 truncate">
                       {window.location.origin}/r/{handoverModalRestaurant.slug}
                     </span>
                     <button
                       onClick={() => copyToClipboard(`${window.location.origin}/r/${handoverModalRestaurant.slug}`, "modal_cust")}
-                      className="ml-2 text-xs text-[#d4af37] hover:underline shrink-0"
+                      className="ml-2 text-xs font-semibold text-[#8b5e34] hover:text-[#2c1810] hover:underline shrink-0"
                     >
                       {copiedKey === "modal_cust" ? "Copied!" : "Copy"}
                     </button>
@@ -1192,14 +1192,14 @@ export default function SuperAdminDashboard() {
 
                 {/* Admin Portal Link */}
                 <div className="space-y-1">
-                  <span className="text-[10px] text-[#8c7355] uppercase font-bold">2. Restaurant Management Portal URL</span>
-                  <div className="flex items-center justify-between bg-[#1b1410] p-2.5 rounded-xl border border-[#33221b]">
-                    <span className="font-mono text-xs text-[#e5c185] truncate">
+                  <span className="text-[10px] text-[#8b7355] uppercase font-bold">2. Restaurant Management Portal URL</span>
+                  <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-[#e8dcc4] shadow-xs">
+                    <span className="font-mono text-xs text-[#8b5e34] font-medium truncate">
                       {window.location.origin}/r/{handoverModalRestaurant.slug}/admin
                     </span>
                     <button
                       onClick={() => copyToClipboard(`${window.location.origin}/r/${handoverModalRestaurant.slug}/admin`, "modal_admin")}
-                      className="ml-2 text-xs text-[#d4af37] hover:underline shrink-0"
+                      className="ml-2 text-xs font-semibold text-[#8b5e34] hover:text-[#2c1810] hover:underline shrink-0"
                     >
                       {copiedKey === "modal_admin" ? "Copied!" : "Copy"}
                     </button>
@@ -1207,14 +1207,14 @@ export default function SuperAdminDashboard() {
                 </div>
 
                 {/* Login Credentials */}
-                <div className="bg-[#1b1410] p-3 rounded-xl border border-[#33221b] grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-white p-3 rounded-xl border border-[#e8dcc4] grid grid-cols-2 gap-2 text-xs shadow-xs">
                   <div>
-                    <span className="text-[10px] text-[#8c7355] uppercase block font-bold">User ID</span>
-                    <span className="font-mono text-white font-bold">{handoverModalRestaurant.adminUserId}</span>
+                    <span className="text-[10px] text-[#8b7355] uppercase block font-bold">User ID</span>
+                    <span className="font-mono text-[#2c1810] font-bold">{handoverModalRestaurant.adminUserId}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#8c7355] uppercase block font-bold">Password</span>
-                    <span className="font-mono text-white font-bold">{handoverModalRestaurant.adminPassword}</span>
+                    <span className="text-[10px] text-[#8b7355] uppercase block font-bold">Password</span>
+                    <span className="font-mono text-[#2c1810] font-bold">{handoverModalRestaurant.adminPassword}</span>
                   </div>
                 </div>
               </div>
@@ -1239,17 +1239,17 @@ _You can now log in, update items, oversee live table orders, and print table QR
                 return (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#c9b89c]">Shareable Handover Note</span>
+                      <span className="text-xs font-bold text-[#4a2c1d]">Shareable Handover Note</span>
                       <button
                         onClick={() => copyToClipboard(messageText, "modal_full_msg")}
-                        className="text-xs text-[#d4af37] hover:underline flex items-center gap-1"
+                        className="text-xs font-semibold text-[#8b5e34] hover:text-[#2c1810] hover:underline flex items-center gap-1"
                       >
-                        {copiedKey === "modal_full_msg" ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                        {copiedKey === "modal_full_msg" ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
                         {copiedKey === "modal_full_msg" ? "Copied to Clipboard!" : "Copy Complete Note"}
                       </button>
                     </div>
 
-                    <pre className="p-3 bg-[#120d0b] border border-[#2e2019] rounded-xl text-[11px] text-[#a89078] whitespace-pre-wrap font-sans max-h-36 overflow-y-auto">
+                    <pre className="p-3 bg-[#fbf9f5] border border-[#e8dcc4] rounded-xl text-[11px] text-[#4a2c1d] whitespace-pre-wrap font-sans max-h-36 overflow-y-auto">
                       {messageText}
                     </pre>
 
@@ -1266,7 +1266,7 @@ _You can now log in, update items, oversee live table orders, and print table QR
 
                       <button
                         onClick={() => handleImpersonateRestaurant(handoverModalRestaurant)}
-                        className="flex-1 flex items-center justify-center gap-2 bg-[#d4af37] text-[#160f0c] font-bold py-2.5 rounded-xl text-xs hover:brightness-110 transition-all shadow-md"
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#2c1810] text-[#fdfaf6] hover:bg-[#4a2c1d] font-bold py-2.5 rounded-xl text-xs transition-all shadow-md"
                       >
                         <ExternalLink size={15} />
                         Launch Dashboard Now
@@ -1283,20 +1283,20 @@ _You can now log in, update items, oversee live table orders, and print table QR
       {/* MODAL 3: Edit Restaurant Profile Modal */}
       <AnimatePresence>
         {isEditModalOpen && editingRestaurant && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#18110e] border border-[#d4af37]/40 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 my-8"
+              className="bg-white border border-[#e8dcc4] rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 my-8 text-[#2c1810]"
             >
-              <div className="flex items-center justify-between border-b border-[#2e2019] pb-4">
-                <h3 className="text-base font-serif font-bold text-white">
+              <div className="flex items-center justify-between border-b border-[#e8dcc4] pb-4">
+                <h3 className="text-base font-serif font-bold text-[#2c1810]">
                   Edit Restaurant: {editingRestaurant.name}
                 </h3>
                 <button
                   onClick={() => setIsEditModalOpen(false)}
-                  className="text-[#a89078] hover:text-white text-sm p-1 rounded"
+                  className="text-[#8b7355] hover:text-[#2c1810] hover:bg-[#f5efe6] text-sm p-1.5 rounded-lg transition-colors"
                 >
                   ✕
                 </button>
@@ -1304,34 +1304,34 @@ _You can now log in, update items, oversee live table orders, and print table QR
 
               <form onSubmit={handleUpdateRestaurant} className="space-y-4 text-xs max-h-[80vh] overflow-y-auto pr-1">
                 <div>
-                  <label className="block text-[#c9b89c] font-bold mb-1">Restaurant Name *</label>
+                  <label className="block text-[#4a2c1d] font-bold mb-1">Restaurant Name *</label>
                   <input
                     type="text"
                     required
                     value={editingRestaurant.name}
                     onChange={(e) => setEditingRestaurant({ ...editingRestaurant, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#241a15] border border-[#3d2b22] rounded-xl text-white focus:outline-none focus:border-[#d4af37]"
+                    className="w-full px-3 py-2 bg-[#fdfaf6] border border-[#e8dcc4] rounded-xl text-[#2c1810] placeholder-[#a89078] focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[#c9b89c] font-bold mb-1">Tagline / Subtitle</label>
+                  <label className="block text-[#4a2c1d] font-bold mb-1">Tagline / Subtitle</label>
                   <input
                     type="text"
                     value={editingRestaurant.subtitle || ""}
                     onChange={(e) => setEditingRestaurant({ ...editingRestaurant, subtitle: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#241a15] border border-[#3d2b22] rounded-xl text-white focus:outline-none focus:border-[#d4af37]"
+                    className="w-full px-3 py-2 bg-[#fdfaf6] border border-[#e8dcc4] rounded-xl text-[#2c1810] placeholder-[#a89078] focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]"
                   />
                 </div>
 
                 {/* Imagery: Cover Photo & Logo */}
-                <div className="bg-[#120d0b] p-3.5 rounded-xl border border-[#2e2019] space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#d4af37]">
+                <div className="bg-[#fbf9f5] p-3.5 rounded-xl border border-[#e8dcc4] space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#8b5e34]">
                     <ImageIcon size={14} /> Restaurant Visuals & Imagery
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-[#8b7355] uppercase mb-1">
                       Restaurant Photo / Cover Image URL
                     </label>
                     <div className="flex items-center gap-2.5">
@@ -1340,13 +1340,13 @@ _You can now log in, update items, oversee live table orders, and print table QR
                         value={editingRestaurant.coverUrl || ""}
                         onChange={(e) => setEditingRestaurant({ ...editingRestaurant, coverUrl: e.target.value })}
                         placeholder="https://images.unsplash.com/... or Google Drive URL"
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] placeholder-[#a89078] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                       {editingRestaurant.coverUrl && (
                         <img
                           src={normalizeImageUrl(editingRestaurant.coverUrl)}
                           alt="Cover Preview"
-                          className="w-12 h-8 object-cover rounded-lg border border-[#3d2b22] bg-[#1a130f] shrink-0"
+                          className="w-12 h-8 object-cover rounded-lg border border-[#e8dcc4] bg-[#f5efe6] shrink-0"
                           referrerPolicy="no-referrer"
                         />
                       )}
@@ -1354,7 +1354,7 @@ _You can now log in, update items, oversee live table orders, and print table QR
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-[#8b7355] uppercase mb-1">
                       Restaurant Logo URL
                     </label>
                     <div className="flex items-center gap-2.5">
@@ -1363,13 +1363,13 @@ _You can now log in, update items, oversee live table orders, and print table QR
                         value={editingRestaurant.logoUrl || ""}
                         onChange={(e) => setEditingRestaurant({ ...editingRestaurant, logoUrl: e.target.value })}
                         placeholder="https://example.com/logo.png"
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] placeholder-[#a89078] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                       {editingRestaurant.logoUrl && (
                         <img
                           src={normalizeImageUrl(editingRestaurant.logoUrl)}
                           alt="Logo Preview"
-                          className="w-8 h-8 object-contain rounded-lg border border-[#3d2b22] bg-white p-0.5 shrink-0"
+                          className="w-8 h-8 object-contain rounded-lg border border-[#e8dcc4] bg-white p-0.5 shrink-0"
                           referrerPolicy="no-referrer"
                         />
                       )}
@@ -1380,112 +1380,112 @@ _You can now log in, update items, oversee live table orders, and print table QR
                 {/* Contact: Phone & Email */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[#c9b89c] font-bold mb-1">Phone Number</label>
+                    <label className="block text-[#4a2c1d] font-bold mb-1">Phone Number</label>
                     <input
                       type="text"
                       value={editingRestaurant.phone || ""}
                       onChange={(e) => setEditingRestaurant({ ...editingRestaurant, phone: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#241a15] border border-[#3d2b22] rounded-xl text-white focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2 bg-[#fdfaf6] border border-[#e8dcc4] rounded-xl text-[#2c1810] placeholder-[#a89078] focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[#c9b89c] font-bold mb-1">Email Address</label>
+                    <label className="block text-[#4a2c1d] font-bold mb-1">Email Address</label>
                     <input
                       type="email"
                       value={editingRestaurant.email || ""}
                       onChange={(e) => setEditingRestaurant({ ...editingRestaurant, email: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#241a15] border border-[#3d2b22] rounded-xl text-white focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2 bg-[#fdfaf6] border border-[#e8dcc4] rounded-xl text-[#2c1810] placeholder-[#a89078] focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[#c9b89c] font-bold mb-1">Physical Address</label>
+                  <label className="block text-[#4a2c1d] font-bold mb-1">Physical Address</label>
                   <input
                     type="text"
                     value={editingRestaurant.address || ""}
                     onChange={(e) => setEditingRestaurant({ ...editingRestaurant, address: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#241a15] border border-[#3d2b22] rounded-xl text-white focus:outline-none focus:border-[#d4af37]"
+                    className="w-full px-3 py-2 bg-[#fdfaf6] border border-[#e8dcc4] rounded-xl text-[#2c1810] placeholder-[#a89078] focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
 
                 {/* Legal & Taxes */}
-                <div className="bg-[#120d0b] p-3.5 rounded-xl border border-[#2e2019] space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#d4af37]">
+                <div className="bg-[#fbf9f5] p-3.5 rounded-xl border border-[#e8dcc4] space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#8b5e34]">
                     <FileText size={14} /> Legal & Taxation
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">GSTIN Number</label>
+                      <label className="block text-[10px] font-bold text-[#8b7355] uppercase mb-1">GSTIN Number</label>
                       <input
                         type="text"
                         value={editingRestaurant.gstin || ""}
                         onChange={(e) => setEditingRestaurant({ ...editingRestaurant, gstin: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white font-mono uppercase text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] placeholder-[#a89078] font-mono uppercase text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">FSSAI License</label>
+                      <label className="block text-[10px] font-bold text-[#8b7355] uppercase mb-1">FSSAI License</label>
                       <input
                         type="text"
                         value={editingRestaurant.fssai || ""}
                         onChange={(e) => setEditingRestaurant({ ...editingRestaurant, fssai: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white font-mono text-xs focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] placeholder-[#a89078] font-mono text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">GST / Tax (%)</label>
+                      <label className="block text-[10px] font-bold text-[#8b7355] uppercase mb-1">GST / Tax (%)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={editingRestaurant.taxRate ?? 5}
                         onChange={(e) => setEditingRestaurant({ ...editingRestaurant, taxRate: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">Service Charge (%)</label>
+                      <label className="block text-[10px] font-bold text-[#8b7355] uppercase mb-1">Service Charge (%)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={editingRestaurant.serviceChargeRate ?? 0}
                         onChange={(e) => setEditingRestaurant({ ...editingRestaurant, serviceChargeRate: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] text-xs focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Bill Customization */}
-                <div className="bg-[#120d0b] p-3.5 rounded-xl border border-[#2e2019] space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#d4af37]">
+                <div className="bg-[#fbf9f5] p-3.5 rounded-xl border border-[#e8dcc4] space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#8b5e34]">
                     <Receipt size={14} /> Bill Receipt Customization
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#a89078] uppercase mb-1">Bill Footer / Thank You Note</label>
+                    <label className="block text-[10px] font-bold text-[#8b7355] uppercase mb-1">Bill Footer / Thank You Note</label>
                     <input
                       type="text"
                       value={editingRestaurant.billFooter || ""}
                       onChange={(e) => setEditingRestaurant({ ...editingRestaurant, billFooter: e.target.value })}
                       placeholder="THANK YOU FOR DINING WITH US"
-                      className="w-full px-3 py-2 bg-[#1a130f] border border-[#3d2b22] rounded-lg text-white text-xs focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2 bg-white border border-[#e8dcc4] rounded-lg text-[#2c1810] placeholder-[#a89078] text-xs focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
 
                   {/* Live Receipt Preview */}
-                  <div className="bg-white p-2.5 rounded-lg border border-slate-300 font-mono text-[8.5px] text-slate-800 space-y-1 leading-tight shadow-xs select-none">
-                    <div className="text-center border-b border-dashed border-slate-300 pb-1">
+                  <div className="bg-white p-2.5 rounded-lg border border-[#e8dcc4] font-mono text-[8.5px] text-[#2c1810] space-y-1 leading-tight shadow-xs select-none">
+                    <div className="text-center border-b border-dashed border-[#e8dcc4] pb-1">
                       <p className="font-extrabold uppercase text-[#2c1810] text-[9.5px]">{editingRestaurant.name || "Restaurant Name"}</p>
                       {editingRestaurant.subtitle && (
-                        <p className="text-[7.5px] text-slate-600 uppercase font-semibold">{editingRestaurant.subtitle}</p>
+                        <p className="text-[7.5px] text-[#8b7355] uppercase font-semibold">{editingRestaurant.subtitle}</p>
                       )}
-                      <p className="text-[7px] text-slate-500">{editingRestaurant.address || "Physical Address"} {editingRestaurant.phone ? `| Ph: ${editingRestaurant.phone}` : ''}</p>
-                      <p className="text-[7px] font-bold text-slate-700">GSTIN: {editingRestaurant.gstin || 'N/A'} | FSSAI: {editingRestaurant.fssai || 'N/A'}</p>
+                      <p className="text-[7px] text-[#8b7355]">{editingRestaurant.address || "Physical Address"} {editingRestaurant.phone ? `| Ph: ${editingRestaurant.phone}` : ''}</p>
+                      <p className="text-[7px] font-bold text-[#4a2c1d]">GSTIN: {editingRestaurant.gstin || 'N/A'} | FSSAI: {editingRestaurant.fssai || 'N/A'}</p>
                     </div>
-                    <div className="text-center pt-1 text-[7.5px] font-extrabold text-slate-700">
+                    <div className="text-center pt-1 text-[7.5px] font-extrabold text-[#8b5e34]">
                       *** {editingRestaurant.billFooter || "THANK YOU FOR DINING WITH US"} ***
                     </div>
                   </div>
@@ -1494,38 +1494,38 @@ _You can now log in, update items, oversee live table orders, and print table QR
                 {/* Admin Credentials */}
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div>
-                    <label className="block text-[#c9b89c] font-bold mb-1">Admin User ID</label>
+                    <label className="block text-[#4a2c1d] font-bold mb-1">Admin User ID</label>
                     <input
                       type="text"
                       required
                       value={editingRestaurant.adminUserId}
                       onChange={(e) => setEditingRestaurant({ ...editingRestaurant, adminUserId: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#241a15] border border-[#3d2b22] rounded-xl text-white font-mono focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2 bg-[#fdfaf6] border border-[#e8dcc4] rounded-xl text-[#2c1810] font-mono focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[#c9b89c] font-bold mb-1">Admin Password</label>
+                    <label className="block text-[#4a2c1d] font-bold mb-1">Admin Password</label>
                     <input
                       type="text"
                       required
                       value={editingRestaurant.adminPassword}
                       onChange={(e) => setEditingRestaurant({ ...editingRestaurant, adminPassword: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#241a15] border border-[#3d2b22] rounded-xl text-white font-mono focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2 bg-[#fdfaf6] border border-[#e8dcc4] rounded-xl text-[#2c1810] font-mono focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2e2019]">
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e8dcc4]">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-[#3d2b22] text-[#a89078]"
+                    className="px-4 py-2 rounded-xl border border-[#e8dcc4] bg-[#f5efe6] text-[#2c1810] hover:bg-[#ebdcc7] transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-[#d4af37] text-[#160f0c] font-bold hover:brightness-110"
+                    className="px-5 py-2 rounded-xl bg-[#d4af37] text-[#2c1810] font-bold hover:brightness-110 shadow-sm transition-all"
                   >
                     Save Changes
                   </button>
