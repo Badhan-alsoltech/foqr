@@ -121,11 +121,7 @@ export default function SuperAdminLogin() {
           </button>
         </form>
 
-        <div className="mt-8 text-xs text-[#8c7355] text-center border-t border-[#2e2019] pt-4">
-          Default Super Admin Credentials:{" "}
-          <span className="font-mono text-[#d4af37] font-semibold">superadmin</span> /{" "}
-          <span className="font-mono text-[#d4af37] font-semibold">superadmin123</span>
-        </div>
+        
       </div>
     </div>
   );
